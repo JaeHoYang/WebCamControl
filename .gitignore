@@ -1,0 +1,94 @@
+# =====================
+# Build output
+# =====================
+bin/
+obj/
+publish/
+
+# Debug symbols
+*.pdb
+
+# =====================
+# Installer
+# =====================
+installer/
+
+# Inno Setup temp / backup
+*.iss.bak
+*.~is
+Output/
+
+# =====================
+# Visual Studio
+# =====================
+.vs/
+*.user
+*.suo
+*.userprefs
+*.userosscache
+*.sln.docstates
+*.rsuser
+.vscode/
+
+# Rider / JetBrains
+.idea/
+*.sln.iml
+
+# =====================
+# .NET / NuGet
+# =====================
+*.nupkg
+*.snupkg
+packages/
+project.lock.json
+project.fragment.lock.json
+artifacts/
+*.dll
+*.exe
+!icon.ico
+
+# =====================
+# Docs
+# =====================
+docs/
+
+# =====================
+# Claude Code
+# =====================
+.claude/
+
+# =====================
+# 구버전 / 중복 파일
+# =====================
+setup.iss
+
+# =====================
+# Sensitive / Local config
+# =====================
+# 앱 설정 파일 (Bot Token·Chat ID 암호화 저장) — 실제 위치는 %LocalAppData%이지만 혹시 몰라 명시
+settings.json
+monitor_settings.json
+appsettings.local.json
+*.env
+.env
+secrets.json
+*.pfx
+*.p12
+*.key
+*.pem
+
+# =====================
+# Temp / Cache
+# =====================
+*.tmp
+*.temp
+*.cache
+~$*
+
+# =====================
+# OS
+# =====================
+Thumbs.db
+Desktop.ini
+.DS_Store
+ehthumbs.db
