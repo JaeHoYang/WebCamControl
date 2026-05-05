@@ -18,10 +18,10 @@ partial class MainForm
     private LinkLabel lnkHelp    = null!;
 
     // 감시 컨트롤
-    private Label  lblMonitorSection   = null!;
-    private Button btnMonitorToggle    = null!;
-    private Button btnTelegramSettings = null!;
-    private Label  lblMonitorStatus    = null!;
+    private Label  lblMonitorSection        = null!;
+    private Button btnMonitorToggle         = null!;
+    private Button btnNotificationSettings  = null!;
+    private Label  lblMonitorStatus         = null!;
 
     // 시스템 트레이
     private NotifyIcon        notifyIcon      = null!;
@@ -38,24 +38,24 @@ partial class MainForm
 
     private void InitializeComponent()
     {
-        lblCamera           = new Label();
-        cmbCamera           = new ComboBox();
-        btnVideo            = new Button();
-        lblMic              = new Label();
-        cmbMic              = new ComboBox();
-        btnMic              = new Button();
-        btnExit             = new Button();
-        lblAuthor           = new Label();
-        lblVersion          = new Label();
-        lnkHelp             = new LinkLabel();
-        lblMonitorSection   = new Label();
-        btnMonitorToggle    = new Button();
-        btnTelegramSettings = new Button();
-        lblMonitorStatus    = new Label();
-        trayMenuOpen        = new ToolStripMenuItem();
-        trayMenuExit        = new ToolStripMenuItem();
-        trayContextMenu     = new ContextMenuStrip();
-        notifyIcon          = new NotifyIcon();
+        lblCamera                  = new Label();
+        cmbCamera                  = new ComboBox();
+        btnVideo                   = new Button();
+        lblMic                     = new Label();
+        cmbMic                     = new ComboBox();
+        btnMic                     = new Button();
+        btnExit                    = new Button();
+        lblAuthor                  = new Label();
+        lblVersion                 = new Label();
+        lnkHelp                    = new LinkLabel();
+        lblMonitorSection          = new Label();
+        btnMonitorToggle           = new Button();
+        btnNotificationSettings    = new Button();
+        lblMonitorStatus           = new Label();
+        trayMenuOpen               = new ToolStripMenuItem();
+        trayMenuExit               = new ToolStripMenuItem();
+        trayContextMenu            = new ContextMenuStrip();
+        notifyIcon                 = new NotifyIcon();
         SuspendLayout();
 
         // lblCamera
@@ -124,14 +124,14 @@ partial class MainForm
         btnMonitorToggle.ForeColor = Color.Green;
         btnMonitorToggle.Click    += new EventHandler(BtnMonitorToggle_Click);
 
-        // btnTelegramSettings
-        btnTelegramSettings.Location  = new Point(156, 268);
-        btnTelegramSettings.Size      = new Size(124, 32);
-        btnTelegramSettings.TabIndex  = 4;
-        btnTelegramSettings.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
-        btnTelegramSettings.Text      = "텔레그램 설정";
-        btnTelegramSettings.ForeColor = Color.DarkSlateBlue;
-        btnTelegramSettings.Click    += new EventHandler(BtnTelegramSettings_Click);
+        // btnNotificationSettings
+        btnNotificationSettings.Location  = new Point(156, 268);
+        btnNotificationSettings.Size      = new Size(124, 32);
+        btnNotificationSettings.TabIndex  = 4;
+        btnNotificationSettings.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
+        btnNotificationSettings.Text      = "알림 설정";
+        btnNotificationSettings.ForeColor = Color.DarkSlateBlue;
+        btnNotificationSettings.Click    += new EventHandler(BtnNotificationSettings_Click);
 
         // lblMonitorStatus
         lblMonitorStatus.Location  = new Point(20, 310);
@@ -149,7 +149,7 @@ partial class MainForm
         lblAuthor.TextAlign = ContentAlignment.MiddleLeft;
 
         // lblVersion
-        lblVersion.Text      = "v1.02";
+        lblVersion.Text      = "v1.03";
         lblVersion.Location  = new Point(20, 362);
         lblVersion.Size      = new Size(260, 16);
         lblVersion.Font      = new Font("맑은 고딕", 8F, FontStyle.Italic);
@@ -198,7 +198,7 @@ partial class MainForm
         Controls.Add(btnExit);
         Controls.Add(lblMonitorSection);
         Controls.Add(btnMonitorToggle);
-        Controls.Add(btnTelegramSettings);
+        Controls.Add(btnNotificationSettings);
         Controls.Add(lblMonitorStatus);
         Controls.Add(lblAuthor);
         Controls.Add(lblVersion);

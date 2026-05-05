@@ -12,18 +12,30 @@ internal sealed class MonitorSettings
             "WebCamControl", "settings.json");
 
     // 메모리상에서는 평문으로 보관
-    internal string BotToken       { get; set; } = string.Empty;
-    internal string ChatId         { get; set; } = string.Empty;
-    internal bool   MonitorEnabled { get; set; } = false;
-    internal bool   FirstRunDone   { get; set; } = false;
+    internal string BotToken          { get; set; } = string.Empty;
+    internal string ChatId            { get; set; } = string.Empty;
+    internal bool   MonitorEnabled    { get; set; } = false;
+    internal bool   FirstRunDone      { get; set; } = false;
+    internal bool   TelegramEnabled   { get; set; } = true;
+    internal bool   KakaoEnabled      { get; set; } = false;
+    internal string KakaoRestApiKey   { get; set; } = string.Empty;
+    internal string KakaoAccessToken  { get; set; } = string.Empty;
+    internal string KakaoRefreshToken { get; set; } = string.Empty;
+    internal bool   KakaoIsConfigured =>
+        !string.IsNullOrEmpty(KakaoAccessToken) || !string.IsNullOrEmpty(KakaoRefreshToken);
 
-    // JSON에 저장되는 DTO — BotToken/ChatId는 DPAPI 암호화된 Base64 문자열
+    // JSON에 저장되는 DTO — 민감 문자열은 DPAPI 암호화된 Base64
     private sealed class Dto
     {
-        public string Token   { get; set; } = string.Empty;
-        public string Chat    { get; set; } = string.Empty;
-        public bool   Monitor { get; set; }
-        public bool   First   { get; set; }
+        public string Token          { get; set; } = string.Empty;
+        public string Chat           { get; set; } = string.Empty;
+        public bool   Monitor        { get; set; }
+        public bool   First          { get; set; }
+        public bool   TelegramOn     { get; set; } = true;
+        public bool   KakaoOn        { get; set; }
+        public string KakaoKey       { get; set; } = string.Empty;
+        public string KakaoAccess    { get; set; } = string.Empty;
+        public string KakaoRefresh   { get; set; } = string.Empty;
     }
 
     internal static MonitorSettings Load()
@@ -36,10 +48,15 @@ internal sealed class MonitorSettings
             var dto = JsonSerializer.Deserialize<Dto>(File.ReadAllText(FilePath));
             if (dto == null) return s;
 
-            s.BotToken       = Decrypt(dto.Token);
-            s.ChatId         = Decrypt(dto.Chat);
-            s.MonitorEnabled = dto.Monitor;
-            s.FirstRunDone   = dto.First;
+            s.BotToken          = Decrypt(dto.Token);
+            s.ChatId            = Decrypt(dto.Chat);
+            s.MonitorEnabled    = dto.Monitor;
+            s.FirstRunDone      = dto.First;
+            s.TelegramEnabled   = dto.TelegramOn;
+            s.KakaoEnabled      = dto.KakaoOn;
+            s.KakaoRestApiKey   = Decrypt(dto.KakaoKey);
+            s.KakaoAccessToken  = Decrypt(dto.KakaoAccess);
+            s.KakaoRefreshToken = Decrypt(dto.KakaoRefresh);
         }
         catch { /* 파일 손상 시 기본값 사용 */ }
 
@@ -52,10 +69,15 @@ internal sealed class MonitorSettings
 
         var dto = new Dto
         {
-            Token   = Encrypt(BotToken),
-            Chat    = Encrypt(ChatId),
-            Monitor = MonitorEnabled,
-            First   = FirstRunDone,
+            Token        = Encrypt(BotToken),
+            Chat         = Encrypt(ChatId),
+            Monitor      = MonitorEnabled,
+            First        = FirstRunDone,
+            TelegramOn   = TelegramEnabled,
+            KakaoOn      = KakaoEnabled,
+            KakaoKey     = Encrypt(KakaoRestApiKey),
+            KakaoAccess  = Encrypt(KakaoAccessToken),
+            KakaoRefresh = Encrypt(KakaoRefreshToken),
         };
 
         File.WriteAllText(FilePath,

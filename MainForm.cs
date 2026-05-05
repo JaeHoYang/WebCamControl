@@ -6,7 +6,8 @@ public partial class MainForm : Form
     private bool _micMuted;
 
     private readonly MonitorSettings  _settings;
-    private readonly TelegramNotifier _notifier;
+    private readonly TelegramNotifier _telegram;
+    private readonly KakaoNotifier    _kakao;
     private CameraMonitor? _monitor;
 
     private string SelectedCamera => cmbCamera.SelectedItem as string ?? string.Empty;
@@ -17,7 +18,13 @@ public partial class MainForm : Form
         InitializeComponent();
 
         _settings = MonitorSettings.Load();
-        _notifier = new TelegramNotifier { BotToken = _settings.BotToken, ChatId = _settings.ChatId };
+        _telegram = new TelegramNotifier { BotToken = _settings.BotToken, ChatId = _settings.ChatId };
+        _kakao    = new KakaoNotifier
+        {
+            RestApiKey   = _settings.KakaoRestApiKey,
+            AccessToken  = _settings.KakaoAccessToken,
+            RefreshToken = _settings.KakaoRefreshToken,
+        };
 
         LoadDeviceLists();
 
@@ -29,7 +36,6 @@ public partial class MainForm : Form
 
         UpdateMonitorButton();
 
-        // 시작 시 감시 중일 때만 트레이로 숨김
         if (startMinimized && _settings.MonitorEnabled)
             Load += (_, _) => HideToTray();
     }
@@ -43,14 +49,16 @@ public partial class MainForm : Form
         if (cameras.Count == 0)
         {
             cmbCamera.Items.Add("(연결된 카메라 없음)");
-            btnVideo.Enabled         = false;
-            btnMonitorToggle.Enabled = false;
+            btnVideo.Enabled                  = false;
+            btnMonitorToggle.Enabled          = false;
+            btnNotificationSettings.Enabled   = false;
         }
         else
         {
             cameras.ForEach(c => cmbCamera.Items.Add(c));
-            btnVideo.Enabled         = true;
-            btnMonitorToggle.Enabled = true;
+            btnVideo.Enabled                  = true;
+            btnMonitorToggle.Enabled          = true;
+            btnNotificationSettings.Enabled   = true;
         }
         cmbCamera.SelectedIndex = 0;
 
@@ -188,33 +196,21 @@ public partial class MainForm : Form
     private void BtnMonitorToggle_Click(object? sender, EventArgs e)
     {
         if (_monitor == null)
-        {
-            if (!_notifier.IsConfigured)
-            {
-                MessageBox.Show(
-                    "텔레그램 설정을 먼저 입력해주세요.",
-                    "설정 필요", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                return;
-            }
             StartMonitoring();
-        }
         else
-        {
             StopMonitoring();
-        }
     }
 
-    private void BtnTelegramSettings_Click(object? sender, EventArgs e)
+    private void BtnNotificationSettings_Click(object? sender, EventArgs e)
     {
-        using var dlg = new TelegramSettingsForm(_settings.BotToken, _settings.ChatId);
+        using var dlg = new NotificationSettingsForm(_settings, _kakao);
         if (dlg.ShowDialog(this) != DialogResult.OK) return;
 
-        _settings.BotToken = dlg.BotToken;
-        _settings.ChatId   = dlg.ChatId;
-        _settings.Save();
+        // 텔레그램 노티파이어 갱신
+        _telegram.BotToken = _settings.BotToken;
+        _telegram.ChatId   = _settings.ChatId;
 
-        _notifier.BotToken = _settings.BotToken;
-        _notifier.ChatId   = _settings.ChatId;
+        // 카카오 노티파이어는 NotificationSettingsForm에서 이미 갱신됨
     }
 
     // ── Monitoring ───────────────────────────────────────────────────────────
@@ -280,7 +276,11 @@ public partial class MainForm : Form
         notifyIcon.BalloonTipText  = body;
         notifyIcon.ShowBalloonTip(6000);
 
-        Task.Run(() => _notifier.SendAsync($"{title}\n{body}"));
+        string message = $"{title}\n{body}";
+        if (_settings.TelegramEnabled)
+            Task.Run(() => _telegram.SendAsync(message));
+        if (_settings.KakaoEnabled)
+            Task.Run(() => _kakao.SendAsync(message));
     }
 
     private void SetMonitorStatusThreadSafe(string text)
@@ -300,7 +300,6 @@ public partial class MainForm : Form
         _settings.FirstRunDone = true;
         _settings.Save();
 
-        // 인스톨러에서 이미 등록했으면 다시 묻지 않음
         if (StartupManager.IsRegistered()) return;
 
         var answer = MessageBox.Show(
@@ -335,7 +334,7 @@ public partial class MainForm : Form
     private void ShowFromTray()
     {
         ShowInTaskbar      = true;
-        notifyIcon.Visible = _monitor != null; // 감시 중이면 아이콘 유지
+        notifyIcon.Visible = _monitor != null;
         Show();
         WindowState = FormWindowState.Normal;
         Activate();
@@ -363,7 +362,8 @@ public partial class MainForm : Form
 
         _monitor?.Stop();
         _monitor?.Dispose();
-        _notifier.Dispose();
+        _telegram.Dispose();
+        _kakao.Dispose();
         notifyIcon.Visible = false;
         base.OnFormClosing(e);
     }

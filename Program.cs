@@ -8,14 +8,12 @@ static class Program
     [STAThread]
     static void Main(string[] args)
     {
-        // 인스톨러: 시작 프로그램 등록
         if (args.Contains("--register-startup"))
         {
             StartupManager.Register();
             return;
         }
 
-        // 인스톨러: 신규 설치 또는 업데이트 후 해시 갱신
         if (args.Contains("--update-hash"))
         {
             FileIntegrityChecker.UpdateHash();
@@ -30,7 +28,6 @@ static class Program
             return;
         }
 
-        // 파일 무결성 검증
         if (!FileIntegrityChecker.Verify())
         {
             HandleTampering();
@@ -43,18 +40,31 @@ static class Program
 
     private static void HandleTampering()
     {
-        // 텔레그램 알림 (설정이 있을 경우)
         var settings = MonitorSettings.Load();
-        if (!string.IsNullOrEmpty(settings.BotToken) && !string.IsNullOrEmpty(settings.ChatId))
+        string message =
+            "🚨 WebCamControl 실행 파일 변조 감지!\n" +
+            "즉시 확인이 필요합니다.";
+
+        if (!string.IsNullOrEmpty(settings.BotToken) && !string.IsNullOrEmpty(settings.ChatId)
+            && settings.TelegramEnabled)
         {
-            using var notifier = new TelegramNotifier
+            using var telegram = new TelegramNotifier
             {
                 BotToken = settings.BotToken,
                 ChatId   = settings.ChatId
             };
-            notifier.SendAsync(
-                "🚨 WebCamControl 실행 파일 변조 감지!\n" +
-                "즉시 확인이 필요합니다.").GetAwaiter().GetResult();
+            telegram.SendAsync(message).GetAwaiter().GetResult();
+        }
+
+        if (settings.KakaoEnabled && settings.KakaoIsConfigured)
+        {
+            using var kakao = new KakaoNotifier
+            {
+                RestApiKey   = settings.KakaoRestApiKey,
+                AccessToken  = settings.KakaoAccessToken,
+                RefreshToken = settings.KakaoRefreshToken,
+            };
+            kakao.SendAsync(message).GetAwaiter().GetResult();
         }
 
         MessageBox.Show(

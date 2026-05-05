@@ -20,20 +20,38 @@ internal partial class HelpForm : Form
             "   텔레그램에서 @userinfobot 을 검색해 /start 를 입력하면\n" +
             "   본인의 Chat ID (예: 123456789) 를 확인할 수 있습니다.\n\n" +
             "③ 앱에서 설정\n" +
-            "   '텔레그램 설정' 버튼 → Bot Token 과 Chat ID 입력 후\n" +
+            "   '알림 설정' → '텔레그램' 탭 → Bot Token과 Chat ID 입력 후\n" +
             "   '테스트 전송'으로 연결을 확인하세요.");
+
+        AppendSeparator();
+
+        AppendHeader("카카오톡 준비 방법");
+        AppendBody(
+            "① Kakao Developers 앱 등록\n" +
+            "   developers.kakao.com → 내 애플리케이션 → 애플리케이션 추가\n" +
+            "   앱 이름 설정 후 REST API 키를 복사합니다.\n\n" +
+            "② 카카오 로그인 활성화\n" +
+            "   앱 설정 → 카카오 로그인 → 활성화 ON\n" +
+            "   Redirect URI 에 다음 주소를 추가합니다:\n" +
+            "   http://localhost:9697/\n\n" +
+            "③ 동의항목 설정\n" +
+            "   앱 설정 → 동의항목 → 카카오톡 메시지 전송 → 선택 동의\n\n" +
+            "④ 앱에서 설정\n" +
+            "   '알림 설정' → '카카오톡' 탭 → REST API 키 입력 후\n" +
+            "   '카카오 로그인' 클릭 → 브라우저에서 로그인 완료");
 
         AppendSeparator();
 
         AppendHeader("웹캠 감시 기능");
         AppendBody(
-            "감시 중에는 두 가지 상황을 감지합니다:\n\n" +
+            "감시 중에는 네 가지 상황을 감지합니다:\n\n" +
             "  • 카메라 장치가 활성화될 때\n" +
-            "    (비활성화 → 활성화 전환 감지)\n\n" +
+            "  • 카메라 장치가 비활성화될 때\n" +
             "  • 앱이 카메라를 사용하기 시작할 때\n" +
-            "    (Zoom, Teams, 브라우저 등)\n\n" +
-            "감지 시 트레이 풍선 알림과 텔레그램 메시지를\n" +
-            "동시에 전송합니다.");
+            "    (Zoom, Teams, 브라우저 등)\n" +
+            "  • 앱이 카메라 사용을 종료할 때\n\n" +
+            "감지 시 트레이 풍선 알림과 활성화된 알림 채널\n" +
+            "(텔레그램/카카오톡)으로 즉시 전송합니다.");
 
         AppendSeparator();
 
@@ -49,7 +67,7 @@ internal partial class HelpForm : Form
         AppendHeader("만든 사람");
         AppendBody(
             "제작자: jaeho\n" +
-            "버전:   v1.02\n" +
+            "버전:   v1.03\n" +
             "메일:   jaeho9697@gmail.com");
 
         rtb.SelectionStart = 0;
