@@ -23,6 +23,7 @@ Windows PC의 웹캠과 마이크를 제어하고, 카메라 사용 여부를 �
 - **시스템 트레이**: X 버튼 / 최소화 → 트레이로 숨김, 더블클릭으로 복원
 - **시작 프로그램**: 설치 시 또는 최초 실행 시 Windows 시작 프로그램 등록 선택 가능
 - **보안 저장**: Bot Token · Chat ID를 Windows DPAPI로 암호화하여 저장
+- **파일 무결성 검증**: 실행 시마다 SHA-256 해시를 검증하여 실행 파일 변조 감지 → 텔레그램 즉시 알림
 
 ## 요구사항
 
@@ -73,8 +74,9 @@ ISCC.exe WebCamControl.iss
 | 카메라 사용 감지 | Windows Registry (CapabilityAccessManager) |
 | 텔레그램 알림 | Telegram Bot API (HttpClient) |
 | 설정 암호화 | Windows DPAPI (ProtectedData) |
+| 파일 무결성 검증 | SHA-256 + DPAPI (HKLM 레지스트리) |
 | 시작 프로그램 등록 | Windows Task Scheduler (schtasks) |
-| 인스톨러 | Inno Setup |
+| 인스톨러 | Inno Setup 7 |
 
 ## 라이선스
 
