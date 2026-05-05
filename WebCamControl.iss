@@ -40,7 +40,12 @@ Name: "{group}\{cm:UninstallProgram,{#MyAppName}}";  Filename: "{uninstallexe}"
 Name: "{commondesktop}\{#MyAppName}";                Filename: "{app}\{#MyAppExeName}"; Tasks: desktopicon
 
 [Run]
-; 시작 프로그램 등록 — 앱 자체의 StartupManager.Register()를 호출해 경로 quoting 문제 방지
+; 설치 후 실행 파일 해시 등록 (무결성 검증 기준값 설정)
+Filename: "{app}\{#MyAppExeName}"; \
+  Parameters: "--update-hash"; \
+  Flags: runhidden waituntilterminated
+
+; 시작 프로그램 등록
 Filename: "{app}\{#MyAppExeName}"; \
   Parameters: "--register-startup"; \
   Flags: runhidden waituntilterminated; Tasks: startup
