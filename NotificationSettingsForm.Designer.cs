@@ -163,7 +163,7 @@ partial class NotificationSettingsForm
         tabControl.Size     = new Size(296, 228);
         tabControl.Font     = new Font("맑은 고딕", 9F);
         tabControl.TabPages.Add(tabTelegram);
-        tabControl.TabPages.Add(tabKakao);
+        // tabControl.TabPages.Add(tabKakao); // 카카오톡 미지원 — 추후 활성화
 
         // ── 하단 버튼 ────────────────────────────────────────────────
 

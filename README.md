@@ -21,8 +21,7 @@ Windows PC의 웹캠과 마이크를 제어하고, 카메라 사용 여부를 �
 
 ### 알림 채널
 - **텔레그램**: Bot Token + Chat ID 설정으로 즉시 사용
-- **카카오톡**: 카카오 로그인 1회 인증 후 나에게 보내기
-- 둘 다 활성화하면 동시 전송, 각각 독립적으로 켜고 끌 수 있음
+- **카카오톡**: ⚠️ 추후 지원 예정 (Kakao API 비즈 앱 인증 문제로 현재 미구현)
 
 ### 기타
 - **시스템 트레이**: X 버튼 / 최소화 → 트레이로 숨김, 더블클릭으로 복원
@@ -86,13 +85,15 @@ Windows PC의 웹캠과 마이크를 제어하고, 카메라 사용 여부를 �
 └─────────────────────────────────┘
 ```
 
-### 알림 설정 — 카카오톡 탭
+### 알림 설정 — 카카오톡 탭 (추후 지원 예정)
+
+> ⚠️ Kakao "나에게 보내기" API가 비즈 앱 인증을 요구하여 현재 비활성화 상태입니다.
 
 ```
 ┌─────────────────────────────────┐
 │  알림 설정                       │
 ├─────────────────────────────────┤
-│ [  텔레그램  ] [  카카오톡  ]    │
+│ [  텔레그램  ] [  카카오톡  ]    │  ← 카카오톡 탭 현재 미표시
 ├─────────────────────────────────┤
 │ ☑ 카카오톡 알림 활성화           │
 │                                 │
@@ -119,18 +120,10 @@ Windows PC의 웹캠과 마이크를 제어하고, 카메라 사용 여부를 �
 3. **앱에서 설정**
    - `알림 설정` → `텔레그램` 탭 → Token · Chat ID 입력 → `테스트 전송` 으로 확인
 
-### 카카오톡 준비
+### 카카오톡 (추후 지원 예정)
 
-1. **Kakao Developers 앱 등록**
-   - [developers.kakao.com](https://developers.kakao.com) → 내 애플리케이션 → 앱 추가
-   - REST API 키 복사
-
-2. **Redirect URI 등록**
-   - 앱 설정 → 카카오 로그인 → Redirect URI 추가
-   - `http://localhost` 입력
-
-3. **앱에서 설정**
-   - `알림 설정` → `카카오톡` 탭 → `카카오 로그인` 클릭 → 브라우저에서 로그인 후 완료
+> Kakao "나에게 보내기" API가 비즈 앱 인증을 요구하여 현재 미구현 상태입니다.
+> 대안 채널(Discord, LINE 등) 검토 중입니다.
 
 ## 빌드
 
@@ -156,7 +149,7 @@ ISCC.exe WebCamControl.iss
 | 마이크 제어 | Windows CoreAudio API (P/Invoke) |
 | 카메라 사용 감지 | Windows Registry (CapabilityAccessManager) |
 | 텔레그램 알림 | Telegram Bot API (HttpClient) |
-| 카카오톡 알림 | Kakao Messaging API — 나에게 보내기 (OAuth 2.0) |
+| 카카오톡 알림 | Kakao Messaging API — 나에게 보내기 (OAuth 2.0) ⚠️ 추후 지원 예정 |
 | 설정 암호화 | Windows DPAPI (ProtectedData) |
 | 파일 무결성 검증 | SHA-256 + DPAPI (HKLM 레지스트리) |
 | 시작 프로그램 등록 | Windows Task Scheduler (schtasks) |
