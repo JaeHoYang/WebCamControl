@@ -7,7 +7,7 @@ public partial class MainForm : Form
 
     private readonly MonitorSettings  _settings;
     private readonly TelegramNotifier _telegram;
-    private readonly KakaoNotifier    _kakao;
+    private readonly DiscordNotifier  _discord;
     private CameraMonitor? _monitor;
 
     private string SelectedCamera => cmbCamera.SelectedItem as string ?? string.Empty;
@@ -19,12 +19,7 @@ public partial class MainForm : Form
 
         _settings = MonitorSettings.Load();
         _telegram = new TelegramNotifier { BotToken = _settings.BotToken, ChatId = _settings.ChatId };
-        _kakao    = new KakaoNotifier
-        {
-            RestApiKey   = _settings.KakaoRestApiKey,
-            AccessToken  = _settings.KakaoAccessToken,
-            RefreshToken = _settings.KakaoRefreshToken,
-        };
+        _discord  = new DiscordNotifier  { WebhookUrl = _settings.DiscordWebhookUrl };
 
         LoadDeviceLists();
 
@@ -203,14 +198,12 @@ public partial class MainForm : Form
 
     private void BtnNotificationSettings_Click(object? sender, EventArgs e)
     {
-        using var dlg = new NotificationSettingsForm(_settings, _kakao);
+        using var dlg = new NotificationSettingsForm(_settings, _discord);
         if (dlg.ShowDialog(this) != DialogResult.OK) return;
 
-        // 텔레그램 노티파이어 갱신
         _telegram.BotToken = _settings.BotToken;
         _telegram.ChatId   = _settings.ChatId;
-
-        // 카카오 노티파이어는 NotificationSettingsForm에서 이미 갱신됨
+        // _discord.WebhookUrl는 NotificationSettingsForm에서 이미 갱신됨
     }
 
     // ── Monitoring ───────────────────────────────────────────────────────────
@@ -279,8 +272,8 @@ public partial class MainForm : Form
         string message = $"{title}\n{body}";
         if (_settings.TelegramEnabled)
             Task.Run(() => _telegram.SendAsync(message));
-        if (_settings.KakaoEnabled)
-            Task.Run(() => _kakao.SendAsync(message));
+        if (_settings.DiscordEnabled)
+            Task.Run(() => _discord.SendAsync(message));
     }
 
     private void SetMonitorStatusThreadSafe(string text)
@@ -363,7 +356,7 @@ public partial class MainForm : Form
         _monitor?.Stop();
         _monitor?.Dispose();
         _telegram.Dispose();
-        _kakao.Dispose();
+        _discord.Dispose();
         notifyIcon.Visible = false;
         base.OnFormClosing(e);
     }

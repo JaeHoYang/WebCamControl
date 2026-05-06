@@ -8,7 +8,7 @@ partial class NotificationSettingsForm
     // Tab
     private TabControl tabControl       = null!;
     private TabPage    tabTelegram      = null!;
-    private TabPage    tabKakao         = null!;
+    private TabPage    tabDiscord       = null!;
 
     // 텔레그램 탭
     private CheckBox chkTelegramEnabled = null!;
@@ -19,13 +19,11 @@ partial class NotificationSettingsForm
     private Button   btnToggleChatId    = null!;
     private Button   btnTelegramTest    = null!;
 
-    // 카카오톡 탭
-    private CheckBox chkKakaoEnabled = null!;
-    private Label    lblRestApiKey   = null!;
-    private TextBox  txtRestApiKey   = null!;
-    private Label    lblKakaoStatus  = null!;
-    private Button   btnKakaoLogin   = null!;
-    private Button   btnKakaoTest    = null!;
+    // Discord 탭
+    private CheckBox chkDiscordEnabled = null!;
+    private Label    lblWebhookUrl     = null!;
+    private TextBox  txtWebhookUrl     = null!;
+    private Button   btnDiscordTest    = null!;
 
     // 하단 버튼
     private Button btnOk     = null!;
@@ -39,24 +37,22 @@ partial class NotificationSettingsForm
 
     private void InitializeComponent()
     {
-        tabControl          = new TabControl();
-        tabTelegram         = new TabPage();
-        tabKakao            = new TabPage();
-        chkTelegramEnabled  = new CheckBox();
-        lblToken            = new Label();
-        txtToken            = new TextBox();
-        lblChatId           = new Label();
-        txtChatId           = new TextBox();
-        btnToggleChatId     = new Button();
-        btnTelegramTest     = new Button();
-        chkKakaoEnabled     = new CheckBox();
-        lblRestApiKey       = new Label();
-        txtRestApiKey       = new TextBox();
-        lblKakaoStatus      = new Label();
-        btnKakaoLogin       = new Button();
-        btnKakaoTest        = new Button();
-        btnOk               = new Button();
-        btnCancel           = new Button();
+        tabControl         = new TabControl();
+        tabTelegram        = new TabPage();
+        tabDiscord         = new TabPage();
+        chkTelegramEnabled = new CheckBox();
+        lblToken           = new Label();
+        txtToken           = new TextBox();
+        lblChatId          = new Label();
+        txtChatId          = new TextBox();
+        btnToggleChatId    = new Button();
+        btnTelegramTest    = new Button();
+        chkDiscordEnabled  = new CheckBox();
+        lblWebhookUrl      = new Label();
+        txtWebhookUrl      = new TextBox();
+        btnDiscordTest     = new Button();
+        btnOk              = new Button();
+        btnCancel          = new Button();
         SuspendLayout();
 
         // ── 텔레그램 탭 컨트롤 ────────────────────────────────────────
@@ -111,51 +107,35 @@ partial class NotificationSettingsForm
         tabTelegram.Controls.Add(btnToggleChatId);
         tabTelegram.Controls.Add(btnTelegramTest);
 
-        // ── 카카오톡 탭 컨트롤 ────────────────────────────────────────
+        // ── Discord 탭 컨트롤 ────────────────────────────────────────
 
-        chkKakaoEnabled.Text      = "카카오톡 알림 활성화";
-        chkKakaoEnabled.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
-        chkKakaoEnabled.Location  = new Point(8, 10);
-        chkKakaoEnabled.Size      = new Size(270, 22);
+        chkDiscordEnabled.Text      = "Discord 알림 활성화";
+        chkDiscordEnabled.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
+        chkDiscordEnabled.Location  = new Point(8, 10);
+        chkDiscordEnabled.Size      = new Size(270, 22);
 
-        lblRestApiKey.Text     = "REST API 키 (Kakao Developers에서 발급):";
-        lblRestApiKey.Font     = new Font("맑은 고딕", 9F);
-        lblRestApiKey.Location = new Point(8, 40);
-        lblRestApiKey.AutoSize = true;
+        lblWebhookUrl.Text     = "Webhook URL (Discord 채널 설정에서 발급):";
+        lblWebhookUrl.Font     = new Font("맑은 고딕", 9F);
+        lblWebhookUrl.Location = new Point(8, 40);
+        lblWebhookUrl.AutoSize = true;
 
-        txtRestApiKey.Location = new Point(8, 60);
-        txtRestApiKey.Size     = new Size(278, 23);
-        txtRestApiKey.Font     = new Font("맑은 고딕", 9F);
+        txtWebhookUrl.Location  = new Point(8, 60);
+        txtWebhookUrl.Size      = new Size(278, 23);
+        txtWebhookUrl.Font      = new Font("맑은 고딕", 9F);
 
-        lblKakaoStatus.Location  = new Point(8, 96);
-        lblKakaoStatus.Size      = new Size(278, 20);
-        lblKakaoStatus.Font      = new Font("맑은 고딕", 9F, FontStyle.Bold);
-        lblKakaoStatus.Text      = "인증 상태: ❌ 미인증";
-        lblKakaoStatus.ForeColor = Color.Red;
+        btnDiscordTest.Location  = new Point(8, 100);
+        btnDiscordTest.Size      = new Size(278, 30);
+        btnDiscordTest.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
+        btnDiscordTest.Text      = "테스트 전송";
+        btnDiscordTest.ForeColor = Color.DarkSlateBlue;
+        btnDiscordTest.Click    += new EventHandler(BtnDiscordTest_Click);
 
-        btnKakaoLogin.Location  = new Point(8, 122);
-        btnKakaoLogin.Size      = new Size(278, 30);
-        btnKakaoLogin.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
-        btnKakaoLogin.Text      = "카카오 로그인";
-        btnKakaoLogin.ForeColor = Color.DarkOrange;
-        btnKakaoLogin.Click    += new EventHandler(BtnKakaoLogin_Click);
-
-        btnKakaoTest.Location  = new Point(8, 158);
-        btnKakaoTest.Size      = new Size(278, 30);
-        btnKakaoTest.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
-        btnKakaoTest.Text      = "테스트 전송";
-        btnKakaoTest.ForeColor = Color.DarkSlateBlue;
-        btnKakaoTest.Enabled   = false;
-        btnKakaoTest.Click    += new EventHandler(BtnKakaoTest_Click);
-
-        tabKakao.Text = "카카오톡";
-        tabKakao.Font = new Font("맑은 고딕", 9F);
-        tabKakao.Controls.Add(chkKakaoEnabled);
-        tabKakao.Controls.Add(lblRestApiKey);
-        tabKakao.Controls.Add(txtRestApiKey);
-        tabKakao.Controls.Add(lblKakaoStatus);
-        tabKakao.Controls.Add(btnKakaoLogin);
-        tabKakao.Controls.Add(btnKakaoTest);
+        tabDiscord.Text = "Discord";
+        tabDiscord.Font = new Font("맑은 고딕", 9F);
+        tabDiscord.Controls.Add(chkDiscordEnabled);
+        tabDiscord.Controls.Add(lblWebhookUrl);
+        tabDiscord.Controls.Add(txtWebhookUrl);
+        tabDiscord.Controls.Add(btnDiscordTest);
 
         // ── TabControl ────────────────────────────────────────────────
 
@@ -163,7 +143,7 @@ partial class NotificationSettingsForm
         tabControl.Size     = new Size(296, 228);
         tabControl.Font     = new Font("맑은 고딕", 9F);
         tabControl.TabPages.Add(tabTelegram);
-        // tabControl.TabPages.Add(tabKakao); // 카카오톡 미지원 — 추후 활성화
+        tabControl.TabPages.Add(tabDiscord);
 
         // ── 하단 버튼 ────────────────────────────────────────────────
 

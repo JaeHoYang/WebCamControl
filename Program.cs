@@ -56,15 +56,10 @@ static class Program
             telegram.SendAsync(message).GetAwaiter().GetResult();
         }
 
-        if (settings.KakaoEnabled && settings.KakaoIsConfigured)
+        if (settings.DiscordEnabled && !string.IsNullOrWhiteSpace(settings.DiscordWebhookUrl))
         {
-            using var kakao = new KakaoNotifier
-            {
-                RestApiKey   = settings.KakaoRestApiKey,
-                AccessToken  = settings.KakaoAccessToken,
-                RefreshToken = settings.KakaoRefreshToken,
-            };
-            kakao.SendAsync(message).GetAwaiter().GetResult();
+            using var discord = new DiscordNotifier { WebhookUrl = settings.DiscordWebhookUrl };
+            discord.SendAsync(message).GetAwaiter().GetResult();
         }
 
         MessageBox.Show(

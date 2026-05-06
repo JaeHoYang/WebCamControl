@@ -25,20 +25,19 @@ internal partial class HelpForm : Form
 
         AppendSeparator();
 
-        AppendHeader("카카오톡 준비 방법");
+        AppendHeader("Discord 웹훅 설정 방법");
         AppendBody(
-            "① Kakao Developers 앱 등록\n" +
-            "   developers.kakao.com → 내 애플리케이션 → 애플리케이션 추가\n" +
-            "   앱 이름 설정 후 REST API 키를 복사합니다.\n\n" +
-            "② 카카오 로그인 활성화\n" +
-            "   앱 설정 → 카카오 로그인 → 활성화 ON\n" +
-            "   Redirect URI 에 다음 주소를 추가합니다:\n" +
-            "   http://localhost:9697/\n\n" +
-            "③ 동의항목 설정\n" +
-            "   앱 설정 → 동의항목 → 카카오톡 메시지 전송 → 선택 동의\n\n" +
-            "④ 앱에서 설정\n" +
-            "   '알림 설정' → '카카오톡' 탭 → REST API 키 입력 후\n" +
-            "   '카카오 로그인' 클릭 → 브라우저에서 로그인 완료");
+            "① Discord 서버에서 채널 설정 열기\n" +
+            "   알림을 받을 채널 옆 톱니바퀴(⚙) 클릭\n" +
+            "   → '연동' 탭 → '웹후크' 클릭\n\n" +
+            "② 웹훅 만들기\n" +
+            "   '새 웹후크' 버튼 클릭\n" +
+            "   이름을 설정하고 '웹후크 URL 복사' 클릭\n\n" +
+            "③ 앱에서 설정\n" +
+            "   '알림 설정' → 'Discord' 탭\n" +
+            "   복사한 Webhook URL 붙여넣기\n" +
+            "   'Discord 알림 활성화' 체크 후 '테스트 전송'으로 확인\n" +
+            "   '확인' 버튼으로 저장");
 
         AppendSeparator();
 
@@ -51,7 +50,7 @@ internal partial class HelpForm : Form
             "    (Zoom, Teams, 브라우저 등)\n" +
             "  • 앱이 카메라 사용을 종료할 때\n\n" +
             "감지 시 트레이 풍선 알림과 활성화된 알림 채널\n" +
-            "(텔레그램/카카오톡)으로 즉시 전송합니다.");
+            "(텔레그램/Discord)으로 즉시 전송합니다.");
 
         AppendSeparator();
 
