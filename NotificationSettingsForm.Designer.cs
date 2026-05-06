@@ -130,7 +130,7 @@ partial class NotificationSettingsForm
         btnDiscordTest.ForeColor = Color.DarkSlateBlue;
         btnDiscordTest.Click    += new EventHandler(BtnDiscordTest_Click);
 
-        tabDiscord.Text = "Discord";
+        tabDiscord.Text = "디스코드";
         tabDiscord.Font = new Font("맑은 고딕", 9F);
         tabDiscord.Controls.Add(chkDiscordEnabled);
         tabDiscord.Controls.Add(lblWebhookUrl);

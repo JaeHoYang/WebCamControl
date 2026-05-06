@@ -1,5 +1,5 @@
 #define MyAppName    "WebCam Controller"
-#define MyAppVersion "1.03"
+#define MyAppVersion "1.04"
 #define MyAppPublisher "jaeho"
 #define MyAppContact "jaeho9697@gmail.com"
 #define MyAppExeName "WebCamControl.exe"

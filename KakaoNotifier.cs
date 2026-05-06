@@ -18,8 +18,7 @@ internal sealed class KakaoNotifier : IDisposable
         "https://kauth.kakao.com/oauth/authorize" +
         $"?client_id={Uri.EscapeDataString(restApiKey)}" +
         $"&redirect_uri={Uri.EscapeDataString(KakaoAuthServer.RedirectUri)}" +
-        "&response_type=code" +
-        "&scope=talk_message";
+        "&response_type=code";
 
     internal async Task<bool> ExchangeCodeAsync(string code)
     {

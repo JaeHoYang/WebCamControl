@@ -20,6 +20,7 @@ partial class MainForm
     // 감시 컨트롤
     private Label  lblMonitorSection        = null!;
     private Button btnMonitorToggle         = null!;
+    private Button btnMonitorOptions        = null!;
     private Button btnNotificationSettings  = null!;
     private Label  lblMonitorStatus         = null!;
 
@@ -50,6 +51,7 @@ partial class MainForm
         lnkHelp                    = new LinkLabel();
         lblMonitorSection          = new Label();
         btnMonitorToggle           = new Button();
+        btnMonitorOptions          = new Button();
         btnNotificationSettings    = new Button();
         lblMonitorStatus           = new Label();
         trayMenuOpen               = new ToolStripMenuItem();
@@ -117,17 +119,26 @@ partial class MainForm
 
         // btnMonitorToggle
         btnMonitorToggle.Location  = new Point(20, 268);
-        btnMonitorToggle.Size      = new Size(124, 32);
+        btnMonitorToggle.Size      = new Size(80, 32);
         btnMonitorToggle.TabIndex  = 3;
         btnMonitorToggle.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
         btnMonitorToggle.Text      = "감시 시작";
         btnMonitorToggle.ForeColor = Color.Green;
         btnMonitorToggle.Click    += new EventHandler(BtnMonitorToggle_Click);
 
+        // btnMonitorOptions
+        btnMonitorOptions.Location  = new Point(104, 268);
+        btnMonitorOptions.Size      = new Size(54, 32);
+        btnMonitorOptions.TabIndex  = 4;
+        btnMonitorOptions.Font      = new Font("맑은 고딕", 9.5F);
+        btnMonitorOptions.Text      = "설정";
+        btnMonitorOptions.ForeColor = Color.DimGray;
+        btnMonitorOptions.Click    += new EventHandler(BtnMonitorOptions_Click);
+
         // btnNotificationSettings
-        btnNotificationSettings.Location  = new Point(156, 268);
-        btnNotificationSettings.Size      = new Size(124, 32);
-        btnNotificationSettings.TabIndex  = 4;
+        btnNotificationSettings.Location  = new Point(162, 268);
+        btnNotificationSettings.Size      = new Size(98, 32);
+        btnNotificationSettings.TabIndex  = 5;
         btnNotificationSettings.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
         btnNotificationSettings.Text      = "알림 설정";
         btnNotificationSettings.ForeColor = Color.DarkSlateBlue;
@@ -149,7 +160,7 @@ partial class MainForm
         lblAuthor.TextAlign = ContentAlignment.MiddleLeft;
 
         // lblVersion
-        lblVersion.Text      = "v1.03";
+        lblVersion.Text      = "v1.04";
         lblVersion.Location  = new Point(20, 362);
         lblVersion.Size      = new Size(260, 16);
         lblVersion.Font      = new Font("맑은 고딕", 8F, FontStyle.Italic);
@@ -198,6 +209,7 @@ partial class MainForm
         Controls.Add(btnExit);
         Controls.Add(lblMonitorSection);
         Controls.Add(btnMonitorToggle);
+        Controls.Add(btnMonitorOptions);
         Controls.Add(btnNotificationSettings);
         Controls.Add(lblMonitorStatus);
         Controls.Add(lblAuthor);

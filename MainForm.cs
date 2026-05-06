@@ -196,6 +196,12 @@ public partial class MainForm : Form
             StopMonitoring();
     }
 
+    private void BtnMonitorOptions_Click(object? sender, EventArgs e)
+    {
+        using var dlg = new MonitorOptionsForm(_settings);
+        dlg.ShowDialog(this);
+    }
+
     private void BtnNotificationSettings_Click(object? sender, EventArgs e)
     {
         using var dlg = new NotificationSettingsForm(_settings, _discord);
@@ -212,7 +218,7 @@ public partial class MainForm : Form
     {
         if (_monitor != null || string.IsNullOrEmpty(SelectedCamera)) return;
 
-        _monitor = new CameraMonitor(SelectedCamera);
+        _monitor = new CameraMonitor(SelectedCamera, _settings.MonitorIntervalSeconds * 1000.0);
         _monitor.CameraEnabled  += OnCameraEnabled;
         _monitor.CameraDisabled += OnCameraDisabled;
         _monitor.CameraInUse    += OnCameraInUse;
@@ -222,12 +228,20 @@ public partial class MainForm : Form
         _settings.MonitorEnabled = true;
         _settings.Save();
 
+        if (_settings.NotifyOnStartStop)
+            Notify("🟢 웹캠 감시 시작", "WebCam Monitor 감시를 시작합니다.");
+        Log("🟢 웹캠 감시 시작");
+
         SetMonitorStatus("감시 중...");
         UpdateMonitorButton();
     }
 
     private void StopMonitoring()
     {
+        if (_settings.NotifyOnStartStop)
+            Notify("⏹️ 웹캠 감시 종료", "WebCam Monitor 감시를 중지합니다.");
+        Log("⏹️ 웹캠 감시 종료");
+
         _monitor?.Stop();
         _monitor?.Dispose();
         _monitor = null;
@@ -242,38 +256,62 @@ public partial class MainForm : Form
     private void OnCameraEnabled(string deviceName)
     {
         Notify("⚠️ 웹캠 활성화 감지!", $"장치: {deviceName}");
+        Log($"⚠️ 웹캠 활성화 감지! — {deviceName}");
         SetMonitorStatusThreadSafe("감시 중... [카메라 켜짐!]");
     }
 
     private void OnCameraDisabled(string deviceName)
     {
         Notify("🔴 웹캠 비활성화 감지!", $"장치: {deviceName}");
+        Log($"🔴 웹캠 비활성화 감지! — {deviceName}");
         SetMonitorStatusThreadSafe("감시 중... [카메라 꺼짐]");
     }
 
     private void OnCameraInUse(string deviceName)
     {
         Notify("📷 웹캠 사용 감지!", $"장치: {deviceName}");
+        Log($"📷 웹캠 사용 감지! — {deviceName}");
         SetMonitorStatusThreadSafe("감시 중... [사용 중!]");
     }
 
     private void OnCameraReleased(string deviceName)
     {
         Notify("⏹️ 웹캠 사용 종료", $"장치: {deviceName}");
+        Log($"⏹️ 웹캠 사용 종료 — {deviceName}");
         SetMonitorStatusThreadSafe("감시 중...");
     }
 
     private void Notify(string title, string body)
     {
-        notifyIcon.BalloonTipTitle = title;
-        notifyIcon.BalloonTipText  = body;
-        notifyIcon.ShowBalloonTip(6000);
+        if (_settings.ShowBalloonTips)
+        {
+            notifyIcon.BalloonTipTitle = title;
+            notifyIcon.BalloonTipText  = body;
+            notifyIcon.ShowBalloonTip(6000);
+        }
 
         string message = $"{title}\n{body}";
         if (_settings.TelegramEnabled)
             Task.Run(() => _telegram.SendAsync(message));
         if (_settings.DiscordEnabled)
             Task.Run(() => _discord.SendAsync(message));
+    }
+
+    // 프로그램 종료 시처럼 Task.Run이 완료되기 전에 프로세스가 끝날 수 있는 경우 사용
+    private void NotifySync(string title, string body)
+    {
+        string message = $"{title}\n{body}";
+        var tasks = new List<Task>();
+        if (_settings.TelegramEnabled) tasks.Add(_telegram.SendAsync(message));
+        if (_settings.DiscordEnabled)  tasks.Add(_discord.SendAsync(message));
+        if (tasks.Count > 0)
+            Task.WhenAll(tasks).Wait(TimeSpan.FromSeconds(3));
+    }
+
+    private void Log(string message)
+    {
+        if (_settings.LogEnabled)
+            EventLogger.Write(message);
     }
 
     private void SetMonitorStatusThreadSafe(string text)
@@ -351,6 +389,13 @@ public partial class MainForm : Form
             e.Cancel = true;
             HideToTray();
             return;
+        }
+
+        if (_monitor != null)
+        {
+            Log("🔴 WebCam Monitor 종료");
+            if (_settings.NotifyOnStartStop)
+                NotifySync("🔴 WebCam Monitor 종료", "프로그램 종료로 감시가 중단되었습니다.");
         }
 
         _monitor?.Stop();
