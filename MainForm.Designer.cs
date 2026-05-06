@@ -119,7 +119,7 @@ partial class MainForm
 
         // btnMonitorToggle
         btnMonitorToggle.Location  = new Point(20, 268);
-        btnMonitorToggle.Size      = new Size(80, 32);
+        btnMonitorToggle.Size      = new Size(84, 32);
         btnMonitorToggle.TabIndex  = 3;
         btnMonitorToggle.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
         btnMonitorToggle.Text      = "감시 시작";
@@ -127,17 +127,17 @@ partial class MainForm
         btnMonitorToggle.Click    += new EventHandler(BtnMonitorToggle_Click);
 
         // btnMonitorOptions
-        btnMonitorOptions.Location  = new Point(104, 268);
-        btnMonitorOptions.Size      = new Size(54, 32);
+        btnMonitorOptions.Location  = new Point(108, 268);
+        btnMonitorOptions.Size      = new Size(84, 32);
         btnMonitorOptions.TabIndex  = 4;
-        btnMonitorOptions.Font      = new Font("맑은 고딕", 9.5F);
+        btnMonitorOptions.Font      = new Font("맑은 고딕", 10.5F, FontStyle.Bold);
         btnMonitorOptions.Text      = "설정";
-        btnMonitorOptions.ForeColor = Color.DimGray;
+        btnMonitorOptions.ForeColor = Color.Black;
         btnMonitorOptions.Click    += new EventHandler(BtnMonitorOptions_Click);
 
         // btnNotificationSettings
-        btnNotificationSettings.Location  = new Point(162, 268);
-        btnNotificationSettings.Size      = new Size(98, 32);
+        btnNotificationSettings.Location  = new Point(196, 268);
+        btnNotificationSettings.Size      = new Size(84, 32);
         btnNotificationSettings.TabIndex  = 5;
         btnNotificationSettings.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
         btnNotificationSettings.Text      = "알림 설정";

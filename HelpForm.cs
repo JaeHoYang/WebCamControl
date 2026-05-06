@@ -43,14 +43,33 @@ internal partial class HelpForm : Form
 
         AppendHeader("웹캠 감시 기능");
         AppendBody(
-            "감시 중에는 네 가지 상황을 감지합니다:\n\n" +
+            "감시 중에는 여섯 가지 상황을 감지합니다:\n\n" +
+            "  • 감시 시작\n" +
             "  • 카메라 장치가 활성화될 때\n" +
             "  • 카메라 장치가 비활성화될 때\n" +
             "  • 앱이 카메라를 사용하기 시작할 때\n" +
             "    (Zoom, Teams, 브라우저 등)\n" +
-            "  • 앱이 카메라 사용을 종료할 때\n\n" +
+            "  • 앱이 카메라 사용을 종료할 때\n" +
+            "  • 감시 종료 / 프로그램 종료\n\n" +
             "감지 시 트레이 풍선 알림과 활성화된 알림 채널\n" +
             "(텔레그램/Discord)으로 즉시 전송합니다.");
+
+        AppendSeparator();
+
+        AppendHeader("감시 설정");
+        AppendBody(
+            "메인 화면 '설정' 버튼을 클릭하면 아래 항목을 조정할 수 있습니다.\n\n" +
+            "① 감시 주기 (1~10초, 기본 3초)\n" +
+            "   카메라 상태를 확인하는 간격을 설정합니다.\n\n" +
+            "② 트레이 풍선 알림 표시\n" +
+            "   PC 화면 우하단 팝업을 끄고 원격 알림만 받을 수 있습니다.\n\n" +
+            "③ 감시 시작·종료 알림 전송\n" +
+            "   감시 시작/중지/프로그램 종료 시 알림을 별도로 켜고 끌 수 있습니다.\n\n" +
+            "④ 날짜별 로그 저장\n" +
+            "   이벤트 발생 시각을 날짜별 텍스트 파일에 기록합니다.\n" +
+            "   저장 위치: 사용자\\AppData\\Local\\WebCamControl\\logs\\\n" +
+            "   '폴더 열기'로 탐색기에서 바로 확인,\n" +
+            "   '오늘 로그 보기'로 앱 내에서 바로 확인할 수 있습니다.");
 
         AppendSeparator();
 
@@ -66,7 +85,7 @@ internal partial class HelpForm : Form
         AppendHeader("만든 사람");
         AppendBody(
             "제작자: jaeho\n" +
-            "버전:   v1.03\n" +
+            "버전:   v1.04\n" +
             "메일:   jaeho9697@gmail.com");
 
         rtb.SelectionStart = 0;
