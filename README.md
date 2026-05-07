@@ -200,12 +200,12 @@ Bot Token · Chat ID · Discord Webhook URL은 Windows DPAPI(현재 사용자 �
 # 개발 빌드
 dotnet build
 
-# 릴리즈 단일 파일 빌드
-dotnet publish -c Release -r win-x64 --self-contained true `
-  -p:PublishSingleFile=true `
-  -p:IncludeNativeLibrariesForSelfExtract=true
+# 릴리즈 빌드 (프레임워크 의존, 단일 파일 — .NET 8 설치 필요)
+dotnet publish -c Release -r win-x64 --self-contained false `
+  -p:PublishSingleFile=true
 
 # 인스톨러 (Inno Setup 7 필요)
+# .NET 8 미설치 환경에서는 설치 시 자동으로 다운로드·설치
 & "C:\Program Files\Inno Setup 7\ISCC.exe" WebCamControl.iss
 ```
 
