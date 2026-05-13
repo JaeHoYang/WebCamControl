@@ -205,7 +205,7 @@ partial class NotificationSettingsForm
         tabControl.Font     = new Font("맑은 고딕", 9F);
         tabControl.TabPages.Add(tabTelegram);
         tabControl.TabPages.Add(tabDiscord);
-        tabControl.TabPages.Add(tabKakao);
+        // tabKakao: 준비 중 — Kakao REST API 설정 복잡도로 비활성화
 
         // ── 하단 버튼 ────────────────────────────────────────────────
 
