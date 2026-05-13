@@ -23,6 +23,10 @@ internal sealed class MonitorSettings
     internal bool   LogEnabled              { get; set; } = false;
     internal bool   ShowBalloonTips         { get; set; } = true;
     internal bool   NotifyOnStartStop       { get; set; } = true;
+    internal bool   KakaoEnabled            { get; set; } = false;
+    internal string KakaoAppKey             { get; set; } = string.Empty;
+    internal string KakaoAccessToken        { get; set; } = string.Empty;
+    internal string KakaoRefreshToken       { get; set; } = string.Empty;
 
     // JSON에 저장되는 DTO — 민감 문자열은 DPAPI 암호화된 Base64
     private sealed class Dto
@@ -38,6 +42,10 @@ internal sealed class MonitorSettings
         public bool   LogOn          { get; set; }
         public bool   BalloonOn      { get; set; } = true;
         public bool   StartStopOn    { get; set; } = true;
+        public bool   KakaoOn        { get; set; }
+        public string KakaoKey       { get; set; } = string.Empty;
+        public string KakaoAccess    { get; set; } = string.Empty;
+        public string KakaoRefresh   { get; set; } = string.Empty;
     }
 
     internal static MonitorSettings Load()
@@ -61,6 +69,10 @@ internal sealed class MonitorSettings
             s.LogEnabled             = dto.LogOn;
             s.ShowBalloonTips        = dto.BalloonOn;
             s.NotifyOnStartStop      = dto.StartStopOn;
+            s.KakaoEnabled           = dto.KakaoOn;
+            s.KakaoAppKey            = Decrypt(dto.KakaoKey);
+            s.KakaoAccessToken       = Decrypt(dto.KakaoAccess);
+            s.KakaoRefreshToken      = Decrypt(dto.KakaoRefresh);
         }
         catch { /* 파일 손상 시 기본값 사용 */ }
 
@@ -84,6 +96,10 @@ internal sealed class MonitorSettings
             LogOn       = LogEnabled,
             BalloonOn   = ShowBalloonTips,
             StartStopOn = NotifyOnStartStop,
+            KakaoOn     = KakaoEnabled,
+            KakaoKey    = Encrypt(KakaoAppKey),
+            KakaoAccess = Encrypt(KakaoAccessToken),
+            KakaoRefresh= Encrypt(KakaoRefreshToken),
         };
 
         File.WriteAllText(FilePath,

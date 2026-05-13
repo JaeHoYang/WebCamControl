@@ -9,6 +9,7 @@ partial class NotificationSettingsForm
     private TabControl tabControl       = null!;
     private TabPage    tabTelegram      = null!;
     private TabPage    tabDiscord       = null!;
+    private TabPage    tabKakao         = null!;
 
     // 텔레그램 탭
     private CheckBox chkTelegramEnabled = null!;
@@ -25,6 +26,14 @@ partial class NotificationSettingsForm
     private TextBox  txtWebhookUrl     = null!;
     private Button   btnDiscordTest    = null!;
 
+    // 카카오톡 탭
+    private CheckBox chkKakaoEnabled  = null!;
+    private Label    lblKakaoKey      = null!;
+    private TextBox  txtKakaoKey      = null!;
+    private Button   btnKakaoLogin    = null!;
+    private Label    lblKakaoStatus   = null!;
+    private Button   btnKakaoTest     = null!;
+
     // 하단 버튼
     private Button btnOk     = null!;
     private Button btnCancel = null!;
@@ -40,6 +49,7 @@ partial class NotificationSettingsForm
         tabControl         = new TabControl();
         tabTelegram        = new TabPage();
         tabDiscord         = new TabPage();
+        tabKakao           = new TabPage();
         chkTelegramEnabled = new CheckBox();
         lblToken           = new Label();
         txtToken           = new TextBox();
@@ -51,6 +61,12 @@ partial class NotificationSettingsForm
         lblWebhookUrl      = new Label();
         txtWebhookUrl      = new TextBox();
         btnDiscordTest     = new Button();
+        chkKakaoEnabled    = new CheckBox();
+        lblKakaoKey        = new Label();
+        txtKakaoKey        = new TextBox();
+        btnKakaoLogin      = new Button();
+        lblKakaoStatus     = new Label();
+        btnKakaoTest       = new Button();
         btnOk              = new Button();
         btnCancel          = new Button();
         SuspendLayout();
@@ -137,6 +153,51 @@ partial class NotificationSettingsForm
         tabDiscord.Controls.Add(txtWebhookUrl);
         tabDiscord.Controls.Add(btnDiscordTest);
 
+        // ── 카카오톡 탭 컨트롤 ───────────────────────────────────────
+
+        chkKakaoEnabled.Text     = "카카오톡 알림 활성화";
+        chkKakaoEnabled.Font     = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
+        chkKakaoEnabled.Location = new Point(8, 10);
+        chkKakaoEnabled.Size     = new Size(270, 22);
+
+        lblKakaoKey.Text     = "REST API 키 (developers.kakao.com):";
+        lblKakaoKey.Font     = new Font("맑은 고딕", 9F);
+        lblKakaoKey.Location = new Point(8, 40);
+        lblKakaoKey.AutoSize = true;
+
+        txtKakaoKey.Location = new Point(8, 60);
+        txtKakaoKey.Size     = new Size(278, 23);
+        txtKakaoKey.Font     = new Font("맑은 고딕", 9F);
+
+        btnKakaoLogin.Location  = new Point(8, 94);
+        btnKakaoLogin.Size      = new Size(278, 30);
+        btnKakaoLogin.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
+        btnKakaoLogin.Text      = "카카오 계정으로 로그인";
+        btnKakaoLogin.ForeColor = Color.DarkGoldenrod;
+        btnKakaoLogin.Click    += new EventHandler(BtnKakaoLogin_Click);
+
+        lblKakaoStatus.Location  = new Point(8, 132);
+        lblKakaoStatus.Size      = new Size(278, 18);
+        lblKakaoStatus.Font      = new Font("맑은 고딕", 8.5F);
+        lblKakaoStatus.ForeColor = Color.Gray;
+        lblKakaoStatus.Text      = "상태: 로그인 필요";
+
+        btnKakaoTest.Location  = new Point(8, 152);
+        btnKakaoTest.Size      = new Size(278, 30);
+        btnKakaoTest.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
+        btnKakaoTest.Text      = "테스트 전송";
+        btnKakaoTest.ForeColor = Color.DarkSlateBlue;
+        btnKakaoTest.Click    += new EventHandler(BtnKakaoTest_Click);
+
+        tabKakao.Text = "카카오톡";
+        tabKakao.Font = new Font("맑은 고딕", 9F);
+        tabKakao.Controls.Add(chkKakaoEnabled);
+        tabKakao.Controls.Add(lblKakaoKey);
+        tabKakao.Controls.Add(txtKakaoKey);
+        tabKakao.Controls.Add(btnKakaoLogin);
+        tabKakao.Controls.Add(lblKakaoStatus);
+        tabKakao.Controls.Add(btnKakaoTest);
+
         // ── TabControl ────────────────────────────────────────────────
 
         tabControl.Location = new Point(12, 12);
@@ -144,6 +205,7 @@ partial class NotificationSettingsForm
         tabControl.Font     = new Font("맑은 고딕", 9F);
         tabControl.TabPages.Add(tabTelegram);
         tabControl.TabPages.Add(tabDiscord);
+        tabControl.TabPages.Add(tabKakao);
 
         // ── 하단 버튼 ────────────────────────────────────────────────
 

@@ -8,6 +8,7 @@ public partial class MainForm : Form
     private readonly MonitorSettings  _settings;
     private readonly TelegramNotifier _telegram;
     private readonly DiscordNotifier  _discord;
+    private readonly KakaoNotifier    _kakao;
     private CameraMonitor? _monitor;
 
     private string SelectedCamera => cmbCamera.SelectedItem as string ?? string.Empty;
@@ -20,6 +21,13 @@ public partial class MainForm : Form
         _settings = MonitorSettings.Load();
         _telegram = new TelegramNotifier { BotToken = _settings.BotToken, ChatId = _settings.ChatId };
         _discord  = new DiscordNotifier  { WebhookUrl = _settings.DiscordWebhookUrl };
+        _kakao    = new KakaoNotifier
+        {
+            IsEnabled    = _settings.KakaoEnabled,
+            RestApiKey   = _settings.KakaoAppKey,
+            AccessToken  = _settings.KakaoAccessToken,
+            RefreshToken = _settings.KakaoRefreshToken,
+        };
 
         LoadDeviceLists();
 
@@ -204,12 +212,12 @@ public partial class MainForm : Form
 
     private void BtnNotificationSettings_Click(object? sender, EventArgs e)
     {
-        using var dlg = new NotificationSettingsForm(_settings, _discord);
+        using var dlg = new NotificationSettingsForm(_settings, _discord, _kakao);
         if (dlg.ShowDialog(this) != DialogResult.OK) return;
 
         _telegram.BotToken = _settings.BotToken;
         _telegram.ChatId   = _settings.ChatId;
-        // _discord.WebhookUrl는 NotificationSettingsForm에서 이미 갱신됨
+        // _discord.WebhookUrl, _kakao 속성은 NotificationSettingsForm에서 이미 갱신됨
     }
 
     // ── Monitoring ───────────────────────────────────────────────────────────
@@ -291,10 +299,9 @@ public partial class MainForm : Form
         }
 
         string message = $"{title}\n{body}";
-        if (_settings.TelegramEnabled)
-            Task.Run(() => _telegram.SendAsync(message));
-        if (_settings.DiscordEnabled)
-            Task.Run(() => _discord.SendAsync(message));
+        if (_settings.TelegramEnabled) Task.Run(() => _telegram.SendAsync(message));
+        if (_settings.DiscordEnabled)  Task.Run(() => _discord.SendAsync(message));
+        if (_kakao.IsConfigured)       Task.Run(() => _kakao.SendAsync(message));
     }
 
     // 프로그램 종료 시처럼 Task.Run이 완료되기 전에 프로세스가 끝날 수 있는 경우 사용
@@ -304,6 +311,7 @@ public partial class MainForm : Form
         var tasks = new List<Task>();
         if (_settings.TelegramEnabled) tasks.Add(_telegram.SendAsync(message));
         if (_settings.DiscordEnabled)  tasks.Add(_discord.SendAsync(message));
+        if (_kakao.IsConfigured)       tasks.Add(_kakao.SendAsync(message));
         if (tasks.Count > 0)
             Task.WhenAll(tasks).Wait(TimeSpan.FromSeconds(3));
     }
@@ -402,6 +410,7 @@ public partial class MainForm : Form
         _monitor?.Dispose();
         _telegram.Dispose();
         _discord.Dispose();
+        _kakao.Dispose();
         notifyIcon.Visible = false;
         base.OnFormClosing(e);
     }

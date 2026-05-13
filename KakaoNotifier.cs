@@ -10,9 +10,11 @@ internal sealed class KakaoNotifier : IDisposable
     internal string RestApiKey   { get; set; } = string.Empty;
     internal string AccessToken  { get; set; } = string.Empty;
     internal string RefreshToken { get; set; } = string.Empty;
+    internal bool   IsEnabled    { get; set; } = false;
 
     internal bool IsConfigured =>
-        !string.IsNullOrWhiteSpace(AccessToken) || !string.IsNullOrWhiteSpace(RefreshToken);
+        IsEnabled &&
+        (!string.IsNullOrWhiteSpace(AccessToken) || !string.IsNullOrWhiteSpace(RefreshToken));
 
     internal static string BuildAuthUrl(string restApiKey) =>
         "https://kauth.kakao.com/oauth/authorize" +
