@@ -23,6 +23,9 @@ internal sealed class MonitorSettings
     internal bool   LogEnabled              { get; set; } = false;
     internal bool   ShowBalloonTips         { get; set; } = true;
     internal bool   NotifyOnStartStop       { get; set; } = true;
+    internal bool   RecordScreenEnabled     { get; set; } = false;
+    internal int    RecordMonitorIndex      { get; set; } = 0;
+    internal int    RecordScreenQuality     { get; set; } = 1;
     internal bool   KakaoEnabled            { get; set; } = false;
     internal string KakaoAppKey             { get; set; } = string.Empty;
     internal string KakaoAccessToken        { get; set; } = string.Empty;
@@ -42,6 +45,9 @@ internal sealed class MonitorSettings
         public bool   LogOn          { get; set; }
         public bool   BalloonOn      { get; set; } = true;
         public bool   StartStopOn    { get; set; } = true;
+        public bool   RecordScreen   { get; set; }
+        public int    RecordMonitor  { get; set; }
+        public int    RecordScreenQ  { get; set; } = 1;
         public bool   KakaoOn        { get; set; }
         public string KakaoKey       { get; set; } = string.Empty;
         public string KakaoAccess    { get; set; } = string.Empty;
@@ -69,6 +75,9 @@ internal sealed class MonitorSettings
             s.LogEnabled             = dto.LogOn;
             s.ShowBalloonTips        = dto.BalloonOn;
             s.NotifyOnStartStop      = dto.StartStopOn;
+            s.RecordScreenEnabled    = dto.RecordScreen;
+            s.RecordMonitorIndex     = dto.RecordMonitor;
+            s.RecordScreenQuality    = dto.RecordScreenQ;
             s.KakaoEnabled           = dto.KakaoOn;
             s.KakaoAppKey            = Decrypt(dto.KakaoKey);
             s.KakaoAccessToken       = Decrypt(dto.KakaoAccess);
@@ -96,7 +105,10 @@ internal sealed class MonitorSettings
             LogOn       = LogEnabled,
             BalloonOn   = ShowBalloonTips,
             StartStopOn = NotifyOnStartStop,
-            KakaoOn     = KakaoEnabled,
+            RecordScreen  = RecordScreenEnabled,
+            RecordMonitor = RecordMonitorIndex,
+            RecordScreenQ = RecordScreenQuality,
+            KakaoOn       = KakaoEnabled,
             KakaoKey    = Encrypt(KakaoAppKey),
             KakaoAccess = Encrypt(KakaoAccessToken),
             KakaoRefresh= Encrypt(KakaoRefreshToken),

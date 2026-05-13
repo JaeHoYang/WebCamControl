@@ -10,6 +10,29 @@ internal partial class HelpForm : Form
 
     private void PopulateContent()
     {
+        AppendHeader("메인 화면 버튼 안내");
+        AppendBody(
+            "【 비디오 On / Off 】\n" +
+            "   선택한 카메라 장치를 활성화하거나 비활성화합니다.\n" +
+            "   파란색 = 켜짐 / 빨간색 = 꺼짐\n\n" +
+            "【 마이크 On / Off 】\n" +
+            "   선택한 마이크 장치의 음소거를 켜거나 끕니다.\n" +
+            "   파란색 = 켜짐 / 빨간색 = 음소거\n\n" +
+            "【 종료 】\n" +
+            "   트레이로 숨기거나 프로그램을 완전 종료하는 선택창이 나타납니다.\n\n" +
+            "【 감시 시작 / 감시 중지 】\n" +
+            "   카메라 상태를 주기적으로 감시합니다.\n" +
+            "   이상 감지 시 알림을 전송하고 자동 화면 녹화를 시작합니다.\n\n" +
+            "【 설정 】\n" +
+            "   감시 주기, 알림, 로그, 화면 녹화 옵션을 조정합니다.\n\n" +
+            "【 알림 설정 】\n" +
+            "   텔레그램 봇 토큰·Chat ID, Discord 웹훅 URL을 설정합니다.\n\n" +
+            "【 녹화 시작 / 녹화 중지 】\n" +
+            "   수동으로 화면 녹화를 시작하거나 중지합니다.\n" +
+            "   설정에서 화면 녹화를 활성화해야 작동합니다.");
+
+        AppendSeparator();
+
         AppendHeader("텔레그램 봇 준비 방법");
         AppendBody(
             "① Bot Token 발급\n" +
@@ -73,6 +96,23 @@ internal partial class HelpForm : Form
 
         AppendSeparator();
 
+        AppendHeader("화면 녹화");
+        AppendBody(
+            "웹캠이 사용되는 순간 화면을 자동으로 녹화하거나,\n" +
+            "메인 화면의 '녹화 시작' 버튼으로 수동 녹화할 수 있습니다.\n\n" +
+            "설정 → '화면 녹화' 탭에서 아래 항목을 조정합니다.\n\n" +
+            "① 웹캠 감지 시 화면 자동 녹화\n" +
+            "   카메라 사용이 감지되면 자동으로 화면 녹화를 시작합니다.\n\n" +
+            "② 녹화 대상 모니터\n" +
+            "   여러 모니터 환경에서 녹화할 화면을 선택합니다.\n\n" +
+            "③ 화질 (낮음 5fps / 보통 10fps / 높음 15fps)\n" +
+            "   높을수록 파일 용량이 커집니다.\n\n" +
+            "녹화 파일 저장 위치:\n" +
+            "   사용자\\AppData\\Local\\WebCamControl\\recordings\\\n" +
+            "   형식: yyyy-MM-dd_HH-mm-ss_태그_screen.avi");
+
+        AppendSeparator();
+
         AppendHeader("시작 프로그램 관리");
         AppendBody(
             "Windows 설정 → 앱 → 시작 프로그램 에서\n" +
@@ -85,7 +125,7 @@ internal partial class HelpForm : Form
         AppendHeader("만든 사람");
         AppendBody(
             "제작자: jaeho\n" +
-            "버전:   v1.04\n" +
+            "버전:   v1.05\n" +
             "메일:   jaeho9697@gmail.com");
 
         rtb.SelectionStart = 0;

@@ -9,6 +9,7 @@ public partial class MainForm : Form
     private readonly TelegramNotifier _telegram;
     private readonly DiscordNotifier  _discord;
     private readonly KakaoNotifier    _kakao;
+    private readonly ScreenRecorder   _screenRecorder;
     private CameraMonitor? _monitor;
 
     private string SelectedCamera => cmbCamera.SelectedItem as string ?? string.Empty;
@@ -27,6 +28,11 @@ public partial class MainForm : Form
             RestApiKey   = _settings.KakaoAppKey,
             AccessToken  = _settings.KakaoAccessToken,
             RefreshToken = _settings.KakaoRefreshToken,
+        };
+        _screenRecorder = new ScreenRecorder
+        {
+            MonitorIndex = _settings.RecordMonitorIndex,
+            Quality      = _settings.RecordScreenQuality,
         };
 
         LoadDeviceLists();
@@ -204,10 +210,33 @@ public partial class MainForm : Form
             StopMonitoring();
     }
 
+    private void BtnRecordToggle_Click(object? sender, EventArgs e)
+    {
+        if (IsAnyRecording)
+        {
+            _screenRecorder.Stop();
+        }
+        else
+        {
+            if (!_settings.RecordScreenEnabled)
+            {
+                MessageBox.Show("설정에서 화면 녹화를 활성화해주세요.",
+                    "녹화 설정 없음", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
+            _screenRecorder.Start("manual");
+        }
+        UpdateRecordButton();
+    }
+
     private void BtnMonitorOptions_Click(object? sender, EventArgs e)
     {
         using var dlg = new MonitorOptionsForm(_settings);
-        dlg.ShowDialog(this);
+        if (dlg.ShowDialog(this) == DialogResult.OK)
+        {
+            _screenRecorder.MonitorIndex = _settings.RecordMonitorIndex;
+            _screenRecorder.Quality      = _settings.RecordScreenQuality;
+        }
     }
 
     private void BtnNotificationSettings_Click(object? sender, EventArgs e)
@@ -279,6 +308,8 @@ public partial class MainForm : Form
     {
         Notify("📷 웹캠 사용 감지!", $"장치: {deviceName}");
         Log($"📷 웹캠 사용 감지! — {deviceName}");
+        if (_settings.RecordScreenEnabled) _screenRecorder.Start("webcam");
+        UpdateRecordButtonThreadSafe();
         SetMonitorStatusThreadSafe("감시 중... [사용 중!]");
     }
 
@@ -286,6 +317,8 @@ public partial class MainForm : Form
     {
         Notify("⏹️ 웹캠 사용 종료", $"장치: {deviceName}");
         Log($"⏹️ 웹캠 사용 종료 — {deviceName}");
+        _screenRecorder.Stop();
+        UpdateRecordButtonThreadSafe();
         SetMonitorStatusThreadSafe("감시 중...");
     }
 
@@ -320,6 +353,23 @@ public partial class MainForm : Form
     {
         if (_settings.LogEnabled)
             EventLogger.Write(message);
+    }
+
+    private bool IsAnyRecording => _screenRecorder.IsRecording;
+
+    private void UpdateRecordButton()
+    {
+        bool rec = IsAnyRecording;
+        btnRecordToggle.Text      = rec ? "녹화 중지" : "녹화 시작";
+        btnRecordToggle.ForeColor = rec ? Color.Red : Color.DarkRed;
+        lblRecordStatus.Text      = $"상태: {(rec ? "녹화 중..." : "꺼짐")}";
+        lblRecordStatus.ForeColor = rec ? Color.Red : Color.Gray;
+    }
+
+    private void UpdateRecordButtonThreadSafe()
+    {
+        if (InvokeRequired) Invoke(UpdateRecordButton);
+        else UpdateRecordButton();
     }
 
     private void SetMonitorStatusThreadSafe(string text)
@@ -408,9 +458,11 @@ public partial class MainForm : Form
 
         _monitor?.Stop();
         _monitor?.Dispose();
+        _screenRecorder.Stop();
         _telegram.Dispose();
         _discord.Dispose();
         _kakao.Dispose();
+        _screenRecorder.Dispose();
         notifyIcon.Visible = false;
         base.OnFormClosing(e);
     }

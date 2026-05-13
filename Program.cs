@@ -22,6 +22,19 @@ static class Program
 
         ApplicationConfiguration.Initialize();
 
+        using var self = Process.GetCurrentProcess();
+        var existing = Process.GetProcessesByName(self.ProcessName)
+            .FirstOrDefault(p => p.Id != self.Id && !p.HasExited);
+        if (existing != null)
+        {
+            var ans = MessageBox.Show(
+                "WebCam Controller가 이미 실행 중입니다.\n실행 중인 프로세스를 종료하고 새로 시작하시겠습니까?",
+                "이미 실행 중", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+            if (ans == DialogResult.Yes)
+            { try { existing.Kill(); existing.WaitForExit(3000); } catch { } }
+            else return;
+        }
+
         if (!IsRunningAsAdministrator())
         {
             RequestElevation();

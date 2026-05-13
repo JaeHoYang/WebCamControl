@@ -11,7 +11,9 @@ publish/
 # =====================
 # Installer
 # =====================
-installer/
+installer/WebCamControl_Setup_v1.02.exe
+installer/WebCamControl_Setup_v1.03.exe
+installer/WebCamControl_Setup_v1.04.exe
 
 # Inno Setup temp / backup
 *.iss.bak
@@ -46,6 +48,7 @@ artifacts/
 *.dll
 *.exe
 !icon.ico
+!installer/WebCamControl_Setup_v1.05.exe
 
 # =====================
 # Docs
