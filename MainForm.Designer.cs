@@ -70,19 +70,19 @@ partial class MainForm
 
         // lblCamera
         lblCamera.AutoSize = true;
-        lblCamera.Location = new Point(20, 20);
+        lblCamera.Location = new Point(20, 13);
         lblCamera.Font     = new Font("맑은 고딕", 9F);
         lblCamera.Text     = "카메라:";
 
         // cmbCamera
-        cmbCamera.Location      = new Point(78, 17);
+        cmbCamera.Location      = new Point(78, 10);
         cmbCamera.Size          = new Size(202, 25);
         cmbCamera.DropDownStyle = ComboBoxStyle.DropDownList;
         cmbCamera.Font          = new Font("맑은 고딕", 9F);
         cmbCamera.SelectedIndexChanged += new EventHandler(CmbCamera_SelectedIndexChanged);
 
         // btnVideo
-        btnVideo.Location = new Point(20, 50);
+        btnVideo.Location = new Point(20, 43);
         btnVideo.Size     = new Size(260, 30);
         btnVideo.TabIndex = 0;
         btnVideo.Font     = new Font("맑은 고딕", 10.5F, FontStyle.Bold);
@@ -102,14 +102,14 @@ partial class MainForm
         cmbMic.SelectedIndexChanged += new EventHandler(CmbMic_SelectedIndexChanged);
 
         // btnMic
-        btnMic.Location = new Point(20, 120);
+        btnMic.Location = new Point(20, 121);
         btnMic.Size     = new Size(260, 30);
         btnMic.TabIndex = 1;
         btnMic.Font     = new Font("맑은 고딕", 10.5F, FontStyle.Bold);
         btnMic.Click   += new EventHandler(BtnMic_Click);
 
         // btnExit
-        btnExit.Location  = new Point(20, 158);
+        btnExit.Location  = new Point(20, 166);
         btnExit.Size      = new Size(260, 30);
         btnExit.TabIndex  = 2;
         btnExit.Font      = new Font("맑은 고딕", 10.5F, FontStyle.Bold);
@@ -118,7 +118,7 @@ partial class MainForm
         btnExit.Click    += new EventHandler(BtnExit_Click);
 
         // lblMonitorSection
-        lblMonitorSection.Location  = new Point(20, 196);
+        lblMonitorSection.Location  = new Point(20, 204);
         lblMonitorSection.Size      = new Size(260, 18);
         lblMonitorSection.Font      = new Font("맑은 고딕", 8.5F, FontStyle.Bold);
         lblMonitorSection.Text      = "─── 웹캠 감시 ───";
@@ -126,7 +126,7 @@ partial class MainForm
         lblMonitorSection.ForeColor = Color.DimGray;
 
         // btnMonitorToggle
-        btnMonitorToggle.Location  = new Point(20, 218);
+        btnMonitorToggle.Location  = new Point(20, 226);
         btnMonitorToggle.Size      = new Size(84, 28);
         btnMonitorToggle.TabIndex  = 3;
         btnMonitorToggle.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
@@ -135,7 +135,7 @@ partial class MainForm
         btnMonitorToggle.Click    += new EventHandler(BtnMonitorToggle_Click);
 
         // btnMonitorOptions
-        btnMonitorOptions.Location  = new Point(108, 218);
+        btnMonitorOptions.Location  = new Point(108, 226);
         btnMonitorOptions.Size      = new Size(84, 28);
         btnMonitorOptions.TabIndex  = 4;
         btnMonitorOptions.Font      = new Font("맑은 고딕", 10.5F, FontStyle.Bold);
@@ -144,7 +144,7 @@ partial class MainForm
         btnMonitorOptions.Click    += new EventHandler(BtnMonitorOptions_Click);
 
         // btnNotificationSettings
-        btnNotificationSettings.Location  = new Point(196, 218);
+        btnNotificationSettings.Location  = new Point(196, 226);
         btnNotificationSettings.Size      = new Size(84, 28);
         btnNotificationSettings.TabIndex  = 5;
         btnNotificationSettings.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
@@ -153,14 +153,14 @@ partial class MainForm
         btnNotificationSettings.Click    += new EventHandler(BtnNotificationSettings_Click);
 
         // lblMonitorStatus
-        lblMonitorStatus.Location  = new Point(20, 250);
+        lblMonitorStatus.Location  = new Point(20, 258);
         lblMonitorStatus.Size      = new Size(260, 18);
         lblMonitorStatus.Font      = new Font("맑은 고딕", 8.5F);
         lblMonitorStatus.Text      = "상태: 꺼짐";
         lblMonitorStatus.ForeColor = Color.Gray;
 
         // lblSectionRecord
-        lblSectionRecord.Location  = new Point(20, 272);
+        lblSectionRecord.Location  = new Point(20, 280);
         lblSectionRecord.Size      = new Size(260, 18);
         lblSectionRecord.Font      = new Font("맑은 고딕", 8.5F, FontStyle.Bold);
         lblSectionRecord.Text      = "─── 화면 녹화 ───";
@@ -168,7 +168,7 @@ partial class MainForm
         lblSectionRecord.ForeColor = Color.DimGray;
 
         // btnRecordToggle
-        btnRecordToggle.Location  = new Point(20, 294);
+        btnRecordToggle.Location  = new Point(20, 302);
         btnRecordToggle.Size      = new Size(260, 30);
         btnRecordToggle.TabIndex  = 6;
         btnRecordToggle.Font      = new Font("맑은 고딕", 10.5F, FontStyle.Bold);
@@ -177,7 +177,7 @@ partial class MainForm
         btnRecordToggle.Click    += new EventHandler(BtnRecordToggle_Click);
 
         // lblRecordStatus
-        lblRecordStatus.Location  = new Point(20, 328);
+        lblRecordStatus.Location  = new Point(20, 336);
         lblRecordStatus.Size      = new Size(260, 18);
         lblRecordStatus.Font      = new Font("맑은 고딕", 8.5F);
         lblRecordStatus.Text      = "상태: 꺼짐";
@@ -185,7 +185,7 @@ partial class MainForm
 
         // lblAuthor
         lblAuthor.Text      = "제작자: jaeho";
-        lblAuthor.Location  = new Point(20, 358);
+        lblAuthor.Location  = new Point(20, 366);
         lblAuthor.Size      = new Size(100, 18);
         lblAuthor.Font      = new Font("맑은 고딕", 8F, FontStyle.Italic);
         lblAuthor.ForeColor = Color.Gray;
@@ -193,7 +193,7 @@ partial class MainForm
 
         // lblVersion
         lblVersion.Text      = "v1.05";
-        lblVersion.Location  = new Point(120, 358);
+        lblVersion.Location  = new Point(120, 366);
         lblVersion.Size      = new Size(60, 18);
         lblVersion.Font      = new Font("맑은 고딕", 8F, FontStyle.Italic);
         lblVersion.ForeColor = Color.Gray;
@@ -201,7 +201,7 @@ partial class MainForm
 
         // lnkHelp
         lnkHelp.Text      = "도움말";
-        lnkHelp.Location  = new Point(202, 358);
+        lnkHelp.Location  = new Point(202, 366);
         lnkHelp.Size      = new Size(78, 18);
         lnkHelp.Font      = new Font("맑은 고딕", 8F);
         lnkHelp.TextAlign = ContentAlignment.MiddleRight;
