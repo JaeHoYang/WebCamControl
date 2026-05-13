@@ -28,11 +28,13 @@ static class Program
             return;
         }
 
+#if !DEBUG
         if (!FileIntegrityChecker.Verify())
         {
             HandleTampering();
             return;
         }
+#endif
 
         bool startMinimized = args.Contains("--minimized");
         Application.Run(new MainForm(startMinimized));
