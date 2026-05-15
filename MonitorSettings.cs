@@ -115,70 +115,74 @@ internal sealed class MonitorSettings
     internal static MonitorSettings Load()
     {
         var s = new MonitorSettings();
-        if (!File.Exists(FilePath))
+
+        if (File.Exists(FilePath))
         {
-            // 설치 시 Inno Setup이 기록한 부트스트랩 파일로 초기 DataRoot 설정
-            string bootstrap = Path.Combine(Path.GetDirectoryName(FilePath)!, "dataroot_bootstrap.txt");
-            if (File.Exists(bootstrap))
+            try
             {
-                try
+                var dto = JsonSerializer.Deserialize<Dto>(File.ReadAllText(FilePath));
+                if (dto != null)
                 {
-                    s.DataRootParent = File.ReadAllText(bootstrap, Encoding.UTF8).Trim();
-                    File.Delete(bootstrap);
+                    s.BotToken               = Decrypt(dto.Token);
+                    s.ChatId                 = Decrypt(dto.Chat);
+                    s.MonitorEnabled         = dto.Monitor;
+                    s.FirstRunDone           = dto.First;
+                    s.TelegramEnabled        = dto.TelegramOn;
+                    s.DiscordEnabled         = dto.DiscordOn;
+                    s.DiscordWebhookUrl      = Decrypt(dto.Discord);
+                    s.MonitorIntervalSeconds = Math.Clamp(dto.Interval, 1, 10);
+                    s.LogEnabled             = dto.LogOn;
+                    s.ShowBalloonTips        = dto.BalloonOn;
+                    s.NotifyOnStartStop      = dto.StartStopOn;
+                    s.RecordScreenEnabled    = dto.RecordScreen;
+                    s.RecordMonitorIndex     = dto.RecordMonitor;
+                    s.RecordScreenQuality    = dto.RecordScreenQ;
+                    s.KakaoEnabled           = dto.KakaoOn;
+                    s.KakaoAppKey            = Decrypt(dto.KakaoKey);
+                    s.KakaoAccessToken       = Decrypt(dto.KakaoAccess);
+                    s.KakaoRefreshToken      = Decrypt(dto.KakaoRefresh);
+                    s.TranslationEnabled      = dto.TransOn;
+                    s.DeepLTranslationEnabled = dto.DeepLOn;
+                    s.VoskModels = dto.VoskList
+                        .Select(e => new VoskModelEntry { Name = e.N, Path = e.P })
+                        .ToList();
+                    if (s.VoskModels.Count == 0 && !string.IsNullOrEmpty(dto.VoskPath))
+                        s.VoskModels.Add(new VoskModelEntry { Name = "기본", Path = dto.VoskPath });
+                    s.ActiveVoskModelIndex    = Math.Clamp(dto.VoskIdx, 0, Math.Max(0, s.VoskModels.Count - 1));
+                    s.DeepLApiKey             = Decrypt(dto.DeepLKey);
+                    s.TranslationSourceLang   = dto.SrcLang;
+                    s.TranslationTargetLang   = dto.TgtLang;
+                    s.ShowOriginalText        = dto.ShowOrig;
+                    s.LogTranslation          = dto.LogTrans;
+                    s.OverlayX                = dto.OvX;
+                    s.OverlayY                = dto.OvY;
+                    s.OverlayWidth            = dto.OvW;
+                    s.OverlayHeight           = dto.OvH;
+                    s.StorageWarningEnabled   = dto.StoreWarn;
+                    s.LogSizeWarningMB        = Math.Max(1, dto.LogWarnMB);
+                    s.RecordSizeWarningMB     = Math.Max(1, dto.RecWarnMB);
+                    s.DataRootParent          = dto.DataRoot;
+                }
+            }
+            catch { /* 파일 손상 시 기본값 사용 */ }
+        }
+
+        // 설치 시 Inno Setup이 기록한 부트스트랩 파일 — settings.json 존재 여부와 무관하게 항상 확인
+        string bootstrapFile = Path.Combine(Path.GetDirectoryName(FilePath)!, "dataroot_bootstrap.txt");
+        if (File.Exists(bootstrapFile))
+        {
+            try
+            {
+                string root = File.ReadAllText(bootstrapFile, Encoding.UTF8).Trim();
+                File.Delete(bootstrapFile);
+                if (!string.IsNullOrEmpty(root))
+                {
+                    s.DataRootParent = root;
                     s.Save();
                 }
-                catch { }
             }
-            return s;
+            catch { }
         }
-
-        try
-        {
-            var dto = JsonSerializer.Deserialize<Dto>(File.ReadAllText(FilePath));
-            if (dto == null) return s;
-
-            s.BotToken               = Decrypt(dto.Token);
-            s.ChatId                 = Decrypt(dto.Chat);
-            s.MonitorEnabled         = dto.Monitor;
-            s.FirstRunDone           = dto.First;
-            s.TelegramEnabled        = dto.TelegramOn;
-            s.DiscordEnabled         = dto.DiscordOn;
-            s.DiscordWebhookUrl      = Decrypt(dto.Discord);
-            s.MonitorIntervalSeconds = Math.Clamp(dto.Interval, 1, 10);
-            s.LogEnabled             = dto.LogOn;
-            s.ShowBalloonTips        = dto.BalloonOn;
-            s.NotifyOnStartStop      = dto.StartStopOn;
-            s.RecordScreenEnabled    = dto.RecordScreen;
-            s.RecordMonitorIndex     = dto.RecordMonitor;
-            s.RecordScreenQuality    = dto.RecordScreenQ;
-            s.KakaoEnabled           = dto.KakaoOn;
-            s.KakaoAppKey            = Decrypt(dto.KakaoKey);
-            s.KakaoAccessToken       = Decrypt(dto.KakaoAccess);
-            s.KakaoRefreshToken      = Decrypt(dto.KakaoRefresh);
-            s.TranslationEnabled      = dto.TransOn;
-            s.DeepLTranslationEnabled = dto.DeepLOn;
-            s.VoskModels = dto.VoskList
-                .Select(e => new VoskModelEntry { Name = e.N, Path = e.P })
-                .ToList();
-            // 이전 버전(단일 경로) 마이그레이션
-            if (s.VoskModels.Count == 0 && !string.IsNullOrEmpty(dto.VoskPath))
-                s.VoskModels.Add(new VoskModelEntry { Name = "기본", Path = dto.VoskPath });
-            s.ActiveVoskModelIndex = Math.Clamp(dto.VoskIdx, 0, Math.Max(0, s.VoskModels.Count - 1));
-            s.DeepLApiKey             = Decrypt(dto.DeepLKey);
-            s.TranslationSourceLang   = dto.SrcLang;
-            s.TranslationTargetLang   = dto.TgtLang;
-            s.ShowOriginalText        = dto.ShowOrig;
-            s.LogTranslation          = dto.LogTrans;
-            s.OverlayX                = dto.OvX;
-            s.OverlayY                = dto.OvY;
-            s.OverlayWidth            = dto.OvW;
-            s.OverlayHeight           = dto.OvH;
-            s.StorageWarningEnabled   = dto.StoreWarn;
-            s.LogSizeWarningMB        = Math.Max(1, dto.LogWarnMB);
-            s.RecordSizeWarningMB     = Math.Max(1, dto.RecWarnMB);
-            s.DataRootParent          = dto.DataRoot;
-        }
-        catch { /* 파일 손상 시 기본값 사용 */ }
 
         return s;
     }
