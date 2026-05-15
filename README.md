@@ -23,6 +23,7 @@ Windows PC의 웹캠과 마이크를 제어하고, 카메라 사용 여부를 �
 | 🔒 보안 저장 | 토큰 · URL · API 키를 Windows DPAPI로 암호화 저장 |
 | 🛡️ 파일 변조 감지 | 실행 시마다 SHA-256 해시 검증 → 변조 시 즉시 알림 |
 | 💾 저장 공간 경고 | 로그·영상 누적 용량 초과 및 디스크 여유 공간 부족 시 알림 |
+| 📁 저장 폴더 지정 | 로그·자막·녹화 저장 위치를 원하는 드라이브로 변경 가능 (설치 시 또는 설정에서) |
 | ⚙️ 시작 프로그램 | Windows 로그인 시 관리자 권한으로 자동 실행 |
 
 ---
@@ -51,11 +52,12 @@ Windows PC의 웹캠과 마이크를 제어하고, 카메라 사용 여부를 �
 
 ## 설치
 
-[Releases](../../releases) 페이지에서 `WebCamControl_Setup_v1.06.11.exe`를 다운로드하여 실행합니다.
+[Releases](../../releases) 페이지에서 `WebCamControl_Setup_v1.06.21.exe`를 다운로드하여 실행합니다.
 
 설치 중 옵션:
 - **Windows 시작 시 자동으로 실행** — 로그인 시 트레이에서 자동 감시 시작 (권장)
 - **바탕화면에 바로가기 만들기**
+- **데이터 저장 위치** — 기본값 또는 사용자 지정 드라이브 선택 (선택한 폴더 아래 `WebCamData\` 자동 생성)
 
 > 설치 후 처음 실행 시 관리자 권한 요청 창이 표시됩니다. **예**를 눌러 허용해 주세요.
 
@@ -104,7 +106,29 @@ Windows PC의 웹캠과 마이크를 제어하고, 카메라 사용 여부를 �
 | 감시 시작·종료 알림 전송 | 감시 시작/중지/종료 시 알림 on/off |
 | 날짜별 로그 저장 | 이벤트를 날짜별 텍스트 파일에 기록 |
 
-로그 저장 위치: `%LocalAppData%\WebCamControl\logs\`
+로그 저장 위치: `%LocalAppData%\WebCamControl\logs\` (기본값, 설정에서 변경 가능)
+
+---
+
+## 데이터 저장 폴더
+
+이벤트 로그, 자막 로그, 녹화 영상이 저장되는 위치를 원하는 드라이브/폴더로 변경할 수 있습니다.
+
+**폴더 구조**
+```
+[지정 폴더]\
+    WebCamData\logs\           ← 이벤트 로그
+    WebCamData\subtitle_logs\  ← 자막 로그
+    WebCamData\recordings\     ← 녹화 영상
+```
+
+기본값은 `%LocalAppData%\WebCamControl` 입니다.
+
+**변경 방법**  
+**설정 → 일반 탭 → 저장 폴더** 섹션에서 `[...]` 버튼으로 상위 폴더를 선택합니다.  
+확인 클릭 후 기존 파일을 새 위치로 이동할지 선택할 수 있습니다.
+
+> 디스크 여유 공간 10% 체크는 변경된 드라이브 기준으로 동작합니다.
 
 ---
 
@@ -138,7 +162,7 @@ Windows PC의 웹캠과 마이크를 제어하고, 카메라 사용 여부를 �
 | 녹화 대상 모니터 | 여러 모니터 환경에서 녹화할 화면 선택 |
 | 화질 | 낮음 5fps / 보통 10fps / 높음 15fps |
 
-녹화 파일 저장 위치: `%LocalAppData%\WebCamControl\recordings\`  
+녹화 파일 저장 위치: `%LocalAppData%\WebCamControl\recordings\` (기본값, 설정에서 변경 가능)  
 파일 형식: `yyyy-MM-dd_HH-mm-ss_태그_screen.avi`
 
 ---
@@ -193,7 +217,7 @@ Vosk는 인터넷 없이 동작하는 오프라인 음성 인식 엔진입니다
 4. 번역 ON 시 원문(밝은 회색) + 번역(노란색)으로 표시
 5. 번역 OFF 시 원문만 흰색으로 거의 실시간 표시
 
-자막 로그 저장 위치: `%LocalAppData%\WebCamControl\subtitle_logs\`
+자막 로그 저장 위치: `%LocalAppData%\WebCamControl\subtitle_logs\` (기본값, 설정에서 변경 가능)
 
 ---
 
@@ -246,8 +270,9 @@ dotnet publish -c Release -r win-x64 --self-contained false `
 | 오디오 캡처 | NAudio 2.2.1 (WasapiLoopbackCapture) |
 | 텔레그램 알림 | Telegram Bot API (HttpClient) |
 | Discord 알림 | Discord Webhook (HttpClient) |
-| 이벤트 로그 | 날짜별 텍스트 파일 (AppData\Local\WebCamControl\logs) |
-| 자막 로그 | 날짜별 텍스트 파일 (AppData\Local\WebCamControl\subtitle_logs) |
+| 이벤트 로그 | 날짜별 텍스트 파일 (기본: AppData\Local\WebCamControl\logs) |
+| 자막 로그 | 날짜별 텍스트 파일 (기본: AppData\Local\WebCamControl\subtitle_logs) |
+| 저장 경로 관리 | 데이터 루트 폴더 변경 + 기존 파일 이동 지원 |
 | 설정 암호화 | Windows DPAPI (ProtectedData) |
 | 파일 무결성 검증 | SHA-256 + DPAPI (HKLM 레지스트리) |
 | 시작 프로그램 등록 | Windows Task Scheduler (schtasks) |
@@ -259,6 +284,7 @@ dotnet publish -c Release -r win-x64 --self-contained false `
 
 | 버전 | 주요 변경 사항 |
 |------|--------------|
+| **v1.06.21** | 데이터 저장 폴더 지정 기능 (설치 시 + 설정에서 변경, WebCamData 하위 폴더 자동 생성, 기존 파일 이동 지원) |
 | **v1.06.11** | 웹캠 사용 앱 이름 자동 감지 표시, 저장 공간 경고 (누적 용량 임계값 + 디스크 10% 미만 시 저장 차단) |
 | **v1.06.01** | 실시간 자막 오버레이 (Vosk), DeepL 번역 연동, 다중 Vosk 모델 지원, 카메라 감지 디바운스, 앱 종료 크래시 수정 |
 | **v1.05** | 화면 녹화 (자동/수동, MJPEG AVI), 단일 인스턴스 체크 |
