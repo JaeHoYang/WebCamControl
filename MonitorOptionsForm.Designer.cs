@@ -583,13 +583,13 @@ partial class MonitorOptionsForm
         // ── 하단 버튼 ─────────────────────────────────────────────────
 
         btnOk.Location  = new Point(8, 438);
-        btnOk.Size      = new Size(168, 32);
+        btnOk.Size      = new Size(160, 30);
         btnOk.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
         btnOk.Text      = "확인";
         btnOk.Click    += new EventHandler(BtnOk_Click);
 
         btnCancel.Location  = new Point(184, 438);
-        btnCancel.Size      = new Size(168, 32);
+        btnCancel.Size      = new Size(160, 30);
         btnCancel.Font      = new Font("맑은 고딕", 9.5F);
         btnCancel.Text      = "취소";
         btnCancel.Click    += new EventHandler(BtnCancel_Click);
