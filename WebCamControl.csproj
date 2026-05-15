@@ -9,6 +9,7 @@
     <AssemblyName>WebCamControl</AssemblyName>
     <RootNamespace>WebCamControl</RootNamespace>
     <ApplicationIcon>icon.ico</ApplicationIcon>
+    <NoWarn>NU1701</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="System.Security.Cryptography.ProtectedData" Version="8.0.0" />
