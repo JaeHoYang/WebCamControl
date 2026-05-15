@@ -8,6 +8,7 @@ internal sealed class CameraMonitor : IDisposable
     private string _deviceName;
     private bool _wasEnabled;
     private bool _wasInUse;
+    private string _lastActiveApp = string.Empty;
 
     // 상태 변화가 이 횟수만큼 연속으로 확인되어야 이벤트를 발생시킴 (깜빡임 방지)
     private const int DebounceCount = 2;
@@ -16,16 +17,18 @@ internal sealed class CameraMonitor : IDisposable
     private bool _pendingEnabled;
     private bool _pendingInUse;
 
-    internal event Action<string>? CameraEnabled;
-    internal event Action<string>? CameraDisabled;
-    internal event Action<string>? CameraInUse;
-    internal event Action<string>? CameraReleased;
+    internal event Action<string>?         CameraEnabled;
+    internal event Action<string>?         CameraDisabled;
+    internal event Action<string, string>? CameraInUse;     // (deviceName, appName)
+    internal event Action<string, string>? CameraReleased;  // (deviceName, appName)
 
     internal CameraMonitor(string deviceName, double intervalMs = 3000)
     {
         _deviceName  = deviceName;
         _wasEnabled  = CameraController.IsEnabled(deviceName);
-        _wasInUse    = IsCurrentlyInUse();
+        string? app  = GetActiveApp();
+        _wasInUse    = app != null;
+        if (app != null) _lastActiveApp = app;
         _pendingEnabled = _wasEnabled;
         _pendingInUse   = _wasInUse;
 
@@ -39,9 +42,9 @@ internal sealed class CameraMonitor : IDisposable
 
     internal void UpdateDevice(string deviceName)
     {
-        _deviceName     = deviceName;
-        _wasEnabled     = CameraController.IsEnabled(deviceName);
-        _pendingEnabled = _wasEnabled;
+        _deviceName         = deviceName;
+        _wasEnabled         = CameraController.IsEnabled(deviceName);
+        _pendingEnabled     = _wasEnabled;
         _enabledChangeTicks = 0;
     }
 
@@ -49,8 +52,10 @@ internal sealed class CameraMonitor : IDisposable
     {
         try
         {
-            bool nowEnabled = CameraController.IsEnabled(_deviceName);
-            bool nowInUse   = IsCurrentlyInUse();
+            bool nowEnabled   = CameraController.IsEnabled(_deviceName);
+            string? activeApp = GetActiveApp();
+            bool nowInUse     = activeApp != null;
+            if (nowInUse) _lastActiveApp = activeApp!;
 
             // 활성화 상태 디바운스
             if (nowEnabled != _pendingEnabled)
@@ -87,8 +92,8 @@ internal sealed class CameraMonitor : IDisposable
                 {
                     _wasInUse         = nowInUse;
                     _inUseChangeTicks = 0;
-                    if (nowInUse) CameraInUse?.Invoke(_deviceName);
-                    else          CameraReleased?.Invoke(_deviceName);
+                    if (nowInUse) CameraInUse?.Invoke(_deviceName, _lastActiveApp);
+                    else          CameraReleased?.Invoke(_deviceName, _lastActiveApp);
                 }
             }
             else
@@ -98,51 +103,62 @@ internal sealed class CameraMonitor : IDisposable
         }
         finally
         {
-            // 핸들러가 완전히 끝난 뒤 타이머 재시작
             _timer.Start();
         }
     }
 
     /// <summary>
-    /// Windows 레지스트리의 카메라 동의 저장소를 폴링하여 현재 사용 중인 앱이 있는지 확인합니다.
-    /// LastUsedTimeStop == 0 이면 해당 앱이 카메라를 열고 있는 상태입니다.
+    /// 현재 웹캠을 사용 중인 앱 이름을 반환합니다. 사용 중인 앱이 없으면 null을 반환합니다.
+    /// Windows 레지스트리의 CapabilityAccessManager를 폴링하며,
+    /// LastUsedTimeStop == 0 인 항목이 현재 카메라를 열고 있는 앱입니다.
     /// </summary>
-    internal static bool IsCurrentlyInUse()
+    internal static string? GetActiveApp()
     {
         const string keyPath =
             @"SOFTWARE\Microsoft\Windows\CurrentVersion\CapabilityAccessManager\ConsentStore\webcam";
 
         using var root = Registry.CurrentUser.OpenSubKey(keyPath);
-        if (root == null) return false;
+        if (root == null) return null;
 
-        return ScanForActiveUse(root);
-    }
-
-    private static bool ScanForActiveUse(RegistryKey key)
-    {
-        if (IsActiveEntry(key)) return true;
-
-        foreach (var name in key.GetSubKeyNames())
+        foreach (var name in root.GetSubKeyNames())
         {
-            using var sub = key.OpenSubKey(name);
+            using var sub = root.OpenSubKey(name);
             if (sub == null) continue;
 
-            if (IsActiveEntry(sub)) return true;
+            // 패키지 앱 (예: Microsoft.ZoomVideoMeetings_xxx)
+            if (IsActiveEntry(sub))
+                return FriendlyAppName(name);
 
+            // 비패키지 앱 (NonPackaged 하위, 예: C:#Program Files#Zoom.exe)
             foreach (var nested in sub.GetSubKeyNames())
             {
                 using var nestedKey = sub.OpenSubKey(nested);
-                if (nestedKey != null && IsActiveEntry(nestedKey)) return true;
+                if (nestedKey != null && IsActiveEntry(nestedKey))
+                    return FriendlyAppName(nested);
             }
         }
-
-        return false;
+        return null;
     }
 
     private static bool IsActiveEntry(RegistryKey key)
     {
         var stop = key.GetValue("LastUsedTimeStop");
         return stop is long val && val == 0;
+    }
+
+    private static string FriendlyAppName(string keyName)
+    {
+        // 비패키지 앱: C:#Program Files#Zoom#bin#Zoom.exe → Zoom.exe
+        int lastHash = keyName.LastIndexOf('#');
+        if (lastHash >= 0)
+            return keyName[(lastHash + 1)..];
+
+        // 패키지 앱: Microsoft.ZoomVideoMeetings_abcxyz → Microsoft.ZoomVideoMeetings
+        int underscore = keyName.LastIndexOf('_');
+        if (underscore > 0)
+            return keyName[..underscore];
+
+        return keyName;
     }
 
     public void Dispose() => _timer.Dispose();

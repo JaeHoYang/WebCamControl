@@ -13,6 +13,7 @@ internal partial class MainForm : Form
     private readonly RealtimeTranslator _translator = new();
     private CameraMonitor?              _monitor;
     private TranslationOverlayForm?     _overlay;
+    private System.Timers.Timer?        _storageTimer;
 
     private string SelectedCamera => cmbCamera.SelectedItem as string ?? string.Empty;
     private string SelectedMic    => cmbMic.SelectedItem    as string ?? string.Empty;
@@ -47,8 +48,12 @@ internal partial class MainForm : Form
 
         UpdateMonitorButton();
 
-        if (startMinimized && _settings.MonitorEnabled)
-            Load += (_, _) => HideToTray();
+        Load += (_, _) =>
+        {
+            if (startMinimized && _settings.MonitorEnabled)
+                HideToTray();
+            StartStorageMonitor();
+        };
     }
 
     // ── Device lists ─────────────────────────────────────────────────────────
@@ -272,6 +277,7 @@ internal partial class MainForm : Form
         _monitor.CameraDisabled += OnCameraDisabled;
         _monitor.CameraInUse    += OnCameraInUse;
         _monitor.CameraReleased += OnCameraReleased;
+
         _monitor.Start();
 
         _settings.MonitorEnabled = true;
@@ -316,19 +322,32 @@ internal partial class MainForm : Form
         SetMonitorStatusThreadSafe("감시 중... [카메라 꺼짐]");
     }
 
-    private void OnCameraInUse(string deviceName)
+    private void OnCameraInUse(string deviceName, string appName)
     {
-        Notify("📷 웹캠 사용 감지!", $"장치: {deviceName}");
-        Log($"📷 웹캠 사용 감지! — {deviceName}");
+        string notifyBody = string.IsNullOrEmpty(appName)
+            ? $"장치: {deviceName}"
+            : $"앱: {appName}\n장치: {deviceName}";
+        string logMsg = string.IsNullOrEmpty(appName)
+            ? $"📷 웹캠 사용 감지! — {deviceName}"
+            : $"📷 웹캠 사용 감지! — {appName} ({deviceName})";
+        Notify("📷 웹캠 사용 감지!", notifyBody);
+        Log(logMsg);
         if (_settings.RecordScreenEnabled) _screenRecorder.Start("webcam");
         UpdateRecordButtonThreadSafe();
-        SetMonitorStatusThreadSafe("감시 중... [사용 중!]");
+        string statusApp = string.IsNullOrEmpty(appName) ? "사용 중!" : appName;
+        SetMonitorStatusThreadSafe($"감시 중... [{statusApp}]");
     }
 
-    private void OnCameraReleased(string deviceName)
+    private void OnCameraReleased(string deviceName, string appName)
     {
-        Notify("⏹️ 웹캠 사용 종료", $"장치: {deviceName}");
-        Log($"⏹️ 웹캠 사용 종료 — {deviceName}");
+        string notifyBody = string.IsNullOrEmpty(appName)
+            ? $"장치: {deviceName}"
+            : $"앱: {appName}\n장치: {deviceName}";
+        string logMsg = string.IsNullOrEmpty(appName)
+            ? $"⏹️ 웹캠 사용 종료 — {deviceName}"
+            : $"⏹️ 웹캠 사용 종료 — {appName} ({deviceName})";
+        Notify("⏹️ 웹캠 사용 종료", notifyBody);
+        Log(logMsg);
         _screenRecorder.Stop();
         UpdateRecordButtonThreadSafe();
         SetMonitorStatusThreadSafe("감시 중...");
@@ -509,6 +528,54 @@ internal partial class MainForm : Form
         lblRecordStatus.ForeColor = rec ? Color.Red : Color.Gray;
     }
 
+    // ── Storage monitoring ───────────────────────────────────────────────
+
+    private void StartStorageMonitor()
+    {
+        CheckStorageSize(showBalloon: false);  // 시작 시 로그만 기록
+        _storageTimer = new System.Timers.Timer(TimeSpan.FromHours(1).TotalMilliseconds) { AutoReset = true };
+        _storageTimer.Elapsed += (_, _) => CheckStorageSize(showBalloon: true);
+        _storageTimer.Start();
+    }
+
+    private void CheckStorageSize(bool showBalloon = true)
+    {
+        if (!_settings.StorageWarningEnabled) return;
+
+        long logMB = GetDirSizeMB(EventLogger.LogDirectory)
+                   + GetDirSizeMB(EventLogger.SubtitleLogDirectory);
+        long recMB = GetDirSizeMB(ScreenRecorder.SaveDirectory);
+
+        var warnings = new List<string>();
+        if (logMB > _settings.LogSizeWarningMB)
+            warnings.Add($"로그: {logMB:N0} MB (기준 {_settings.LogSizeWarningMB:N0} MB 초과)");
+        if (recMB > _settings.RecordSizeWarningMB)
+            warnings.Add($"영상: {FormatSizeMB(recMB)} (기준 {FormatSizeMB(_settings.RecordSizeWarningMB)} 초과)");
+
+        if (warnings.Count == 0) return;
+
+        string body = string.Join("\n", warnings) + "\n설정에서 폴더를 열어 직접 정리하세요.";
+        Log($"⚠ 저장 공간 경고 — {string.Join(" / ", warnings)}");
+
+        if (showBalloon)
+            RunOnUiThread(() => notifyIcon.ShowBalloonTip(10000, "⚠ 저장 공간 경고", body, ToolTipIcon.Warning));
+    }
+
+    private static long GetDirSizeMB(string path)
+    {
+        if (!Directory.Exists(path)) return 0;
+        try
+        {
+            return new DirectoryInfo(path)
+                .GetFiles("*", SearchOption.AllDirectories)
+                .Sum(f => f.Length) / (1024 * 1024);
+        }
+        catch { return 0; }
+    }
+
+    private static string FormatSizeMB(long mb)
+        => mb >= 1024 ? $"{mb / 1024.0:F1} GB" : $"{mb:N0} MB";
+
     private void RunOnUiThread(Action action)
     {
         if (InvokeRequired) Invoke(action);
@@ -595,6 +662,8 @@ internal partial class MainForm : Form
                 NotifySync("🔴 WebCam Monitor 종료", "프로그램 종료로 감시가 중단되었습니다.");
         }
 
+        _storageTimer?.Stop();
+        _storageTimer?.Dispose();
         _monitor?.Stop();
         _monitor?.Dispose();
         _screenRecorder.Stop();

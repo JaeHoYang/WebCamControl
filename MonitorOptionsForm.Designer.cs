@@ -66,6 +66,17 @@ partial class MonitorOptionsForm
     private CheckBox  chkLogTrans          = null!;
     private Button    btnOpenSubtitleFolder = null!;
 
+    // 일반 탭 — 저장 공간 경고
+    private Label         lblSectionStorage = null!;
+    private CheckBox      chkStorageWarning = null!;
+    private Label         lblLogWarn        = null!;
+    private NumericUpDown nudLogWarnMB      = null!;
+    private Label         lblLogWarnUnit    = null!;
+    private Label         lblRecWarn        = null!;
+    private NumericUpDown nudRecWarnGB      = null!;
+    private Label         lblRecWarnUnit    = null!;
+    private Label         lblCurrentUsage   = null!;
+
     // 하단 버튼
     private Button btnOk     = null!;
     private Button btnCancel = null!;
@@ -114,6 +125,15 @@ partial class MonitorOptionsForm
         lblLogPath          = new Label();
         btnOpenFolder       = new Button();
         btnViewTodayLog     = new Button();
+        lblSectionStorage   = new Label();
+        chkStorageWarning   = new CheckBox();
+        lblLogWarn          = new Label();
+        nudLogWarnMB        = new NumericUpDown();
+        lblLogWarnUnit      = new Label();
+        lblRecWarn          = new Label();
+        nudRecWarnGB        = new NumericUpDown();
+        lblRecWarnUnit      = new Label();
+        lblCurrentUsage     = new Label();
         lblSectionScreen    = new Label();
         chkRecordScreen     = new CheckBox();
         lblRecordMonitor    = new Label();
@@ -201,6 +221,60 @@ partial class MonitorOptionsForm
         btnViewTodayLog.ForeColor = Color.DarkSlateBlue;
         btnViewTodayLog.Click    += new EventHandler(BtnViewTodayLog_Click);
 
+        lblSectionStorage.Text      = "── 저장 공간 경고 ────────────────";
+        lblSectionStorage.Location  = new Point(8, 248);
+        lblSectionStorage.Size      = new Size(280, 16);
+        lblSectionStorage.Font      = new Font("맑은 고딕", 8.5F, FontStyle.Bold);
+        lblSectionStorage.ForeColor = Color.DimGray;
+
+        chkStorageWarning.Text     = "용량 초과 시 경고 알림";
+        chkStorageWarning.Font     = new Font("맑은 고딕", 9.5F);
+        chkStorageWarning.Location = new Point(8, 270);
+        chkStorageWarning.Size     = new Size(280, 22);
+        chkStorageWarning.CheckedChanged += new EventHandler(ChkStorageWarning_CheckedChanged);
+
+        lblLogWarn.Text     = "로그 임계값:";
+        lblLogWarn.Font     = new Font("맑은 고딕", 9F);
+        lblLogWarn.Location = new Point(8, 298);
+        lblLogWarn.AutoSize = true;
+
+        nudLogWarnMB.Location = new Point(86, 295);
+        nudLogWarnMB.Size     = new Size(72, 25);
+        nudLogWarnMB.Font     = new Font("맑은 고딕", 9F);
+        nudLogWarnMB.Minimum  = 10;
+        nudLogWarnMB.Maximum  = 10000;
+        nudLogWarnMB.Value    = 100;
+
+        lblLogWarnUnit.Text      = "MB";
+        lblLogWarnUnit.Font      = new Font("맑은 고딕", 9F);
+        lblLogWarnUnit.Location  = new Point(162, 298);
+        lblLogWarnUnit.AutoSize  = true;
+        lblLogWarnUnit.ForeColor = Color.DimGray;
+
+        lblRecWarn.Text     = "영상 임계값:";
+        lblRecWarn.Font     = new Font("맑은 고딕", 9F);
+        lblRecWarn.Location = new Point(8, 326);
+        lblRecWarn.AutoSize = true;
+
+        nudRecWarnGB.Location = new Point(86, 323);
+        nudRecWarnGB.Size     = new Size(72, 25);
+        nudRecWarnGB.Font     = new Font("맑은 고딕", 9F);
+        nudRecWarnGB.Minimum  = 1;
+        nudRecWarnGB.Maximum  = 1000;
+        nudRecWarnGB.Value    = 5;
+
+        lblRecWarnUnit.Text      = "GB";
+        lblRecWarnUnit.Font      = new Font("맑은 고딕", 9F);
+        lblRecWarnUnit.Location  = new Point(162, 326);
+        lblRecWarnUnit.AutoSize  = true;
+        lblRecWarnUnit.ForeColor = Color.DimGray;
+
+        lblCurrentUsage.Location  = new Point(8, 354);
+        lblCurrentUsage.Size      = new Size(280, 16);
+        lblCurrentUsage.Font      = new Font("맑은 고딕", 8F);
+        lblCurrentUsage.ForeColor = Color.Gray;
+        lblCurrentUsage.Text      = "현재: 계산 중...";
+
         tabGeneral.Text = "일반";
         tabGeneral.Font = new Font("맑은 고딕", 9F);
         tabGeneral.Controls.Add(lblSectionMonitor);
@@ -215,6 +289,15 @@ partial class MonitorOptionsForm
         tabGeneral.Controls.Add(lblLogPath);
         tabGeneral.Controls.Add(btnOpenFolder);
         tabGeneral.Controls.Add(btnViewTodayLog);
+        tabGeneral.Controls.Add(lblSectionStorage);
+        tabGeneral.Controls.Add(chkStorageWarning);
+        tabGeneral.Controls.Add(lblLogWarn);
+        tabGeneral.Controls.Add(nudLogWarnMB);
+        tabGeneral.Controls.Add(lblLogWarnUnit);
+        tabGeneral.Controls.Add(lblRecWarn);
+        tabGeneral.Controls.Add(nudRecWarnGB);
+        tabGeneral.Controls.Add(lblRecWarnUnit);
+        tabGeneral.Controls.Add(lblCurrentUsage);
 
         // ── 화면 녹화 탭 ────────────────────────────────────────────────
 

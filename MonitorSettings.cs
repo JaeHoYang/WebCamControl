@@ -49,6 +49,11 @@ internal sealed class MonitorSettings
     internal int    OverlayWidth            { get; set; } = 600;
     internal int    OverlayHeight           { get; set; } = 200;
 
+    // 저장 공간 경고
+    internal bool StorageWarningEnabled { get; set; } = true;
+    internal int  LogSizeWarningMB      { get; set; } = 100;
+    internal int  RecordSizeWarningMB   { get; set; } = 5120;  // 5 GB
+
     // JSON에 저장되는 DTO — 민감 문자열은 DPAPI 암호화된 Base64
     private sealed class Dto
     {
@@ -91,6 +96,10 @@ internal sealed class MonitorSettings
         public int    OvY            { get; set; } = 800;
         public int    OvW            { get; set; } = 600;
         public int    OvH            { get; set; } = 200;
+        // 저장 공간 경고
+        public bool StoreWarn  { get; set; } = true;
+        public int  LogWarnMB  { get; set; } = 100;
+        public int  RecWarnMB  { get; set; } = 5120;
     }
 
     internal static MonitorSettings Load()
@@ -139,6 +148,9 @@ internal sealed class MonitorSettings
             s.OverlayY                = dto.OvY;
             s.OverlayWidth            = dto.OvW;
             s.OverlayHeight           = dto.OvH;
+            s.StorageWarningEnabled   = dto.StoreWarn;
+            s.LogSizeWarningMB        = Math.Max(1, dto.LogWarnMB);
+            s.RecordSizeWarningMB     = Math.Max(1, dto.RecWarnMB);
         }
         catch { /* 파일 손상 시 기본값 사용 */ }
 
@@ -182,6 +194,9 @@ internal sealed class MonitorSettings
             OvY       = OverlayY,
             OvW       = OverlayWidth,
             OvH       = OverlayHeight,
+            StoreWarn = StorageWarningEnabled,
+            LogWarnMB = LogSizeWarningMB,
+            RecWarnMB = RecordSizeWarningMB,
         };
 
         File.WriteAllText(FilePath,

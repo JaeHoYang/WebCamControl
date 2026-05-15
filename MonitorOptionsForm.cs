@@ -37,6 +37,13 @@ internal partial class MonitorOptionsForm : Form
         SetScreenQuality(settings.RecordScreenQuality);
         UpdateRecordScreenControls();
 
+        // 저장 공간 경고 탭
+        chkStorageWarning.Checked = settings.StorageWarningEnabled;
+        nudLogWarnMB.Value        = Math.Clamp(settings.LogSizeWarningMB, 10, 10000);
+        nudRecWarnGB.Value        = Math.Clamp(settings.RecordSizeWarningMB / 1024, 1, 1000);
+        UpdateStorageWarningControls();
+        RefreshCurrentUsage();
+
         // 번역 탭
         chkTransEnabled.Checked = settings.TranslationEnabled;
         _voskModels    = settings.VoskModels.Select(m => new VoskModelEntry { Name = m.Name, Path = m.Path }).ToList();
@@ -68,6 +75,37 @@ internal partial class MonitorOptionsForm : Form
 
     private void ChkLogEnabled_CheckedChanged(object? sender, EventArgs e) =>
         UpdateLogButtons();
+
+    // ── 저장 공간 경고 ────────────────────────────────────────────────
+
+    private void UpdateStorageWarningControls()
+    {
+        bool on = chkStorageWarning.Checked;
+        nudLogWarnMB.Enabled = on;
+        nudRecWarnGB.Enabled = on;
+    }
+
+    private void ChkStorageWarning_CheckedChanged(object? sender, EventArgs e) =>
+        UpdateStorageWarningControls();
+
+    private void RefreshCurrentUsage()
+    {
+        long logMB = GetDirSizeMB(EventLogger.LogDirectory)
+                   + GetDirSizeMB(EventLogger.SubtitleLogDirectory);
+        long recMB = GetDirSizeMB(ScreenRecorder.SaveDirectory);
+        lblCurrentUsage.Text = $"현재: 로그 {logMB:N0} MB / 영상 {FormatSizeMB(recMB)}";
+    }
+
+    private static long GetDirSizeMB(string path)
+    {
+        if (!Directory.Exists(path)) return 0;
+        return new DirectoryInfo(path)
+            .GetFiles("*", SearchOption.AllDirectories)
+            .Sum(f => f.Length) / (1024 * 1024);
+    }
+
+    private static string FormatSizeMB(long mb)
+        => mb >= 1024 ? $"{mb / 1024.0:F1} GB" : $"{mb:N0} MB";
 
     private void BtnOpenFolder_Click(object? sender, EventArgs e)
     {
@@ -271,6 +309,10 @@ internal partial class MonitorOptionsForm : Form
         _settings.RecordScreenEnabled = chkRecordScreen.Checked;
         _settings.RecordMonitorIndex  = Math.Max(0, cmbRecordMonitor.SelectedIndex);
         _settings.RecordScreenQuality = GetScreenQuality();
+
+        _settings.StorageWarningEnabled = chkStorageWarning.Checked;
+        _settings.LogSizeWarningMB      = (int)nudLogWarnMB.Value;
+        _settings.RecordSizeWarningMB   = (int)nudRecWarnGB.Value * 1024;
 
         _settings.TranslationEnabled      = chkTransEnabled.Checked;
         _settings.VoskModels              = _voskModels;

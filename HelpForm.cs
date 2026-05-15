@@ -96,7 +96,10 @@ internal partial class HelpForm : Form
             "  • 앱이 카메라 사용을 종료할 때\n" +
             "  • 감시 종료 / 프로그램 종료\n\n" +
             "감지 시 트레이 풍선 알림과 활성화된 알림 채널\n" +
-            "(텔레그램/Discord)으로 즉시 전송합니다.");
+            "(텔레그램/Discord)으로 즉시 전송합니다.\n\n" +
+            "카메라를 사용 중인 앱 이름이 자동으로 감지되어\n" +
+            "알림 메시지와 감시 상태에 함께 표시됩니다.\n" +
+            "예) 📷 웹캠 사용 감지! — Zoom.exe");
 
         AppendSeparator();
 
@@ -205,6 +208,20 @@ internal partial class HelpForm : Form
 
         AppendSeparator();
 
+        AppendHeader("저장 공간 경고");
+        AppendBody(
+            "로그 파일과 녹화 영상 용량이 설정한 기준을 초과하면\n" +
+            "트레이 풍선 알림으로 경고합니다.\n\n" +
+            "설정 → '일반' 탭 → '저장 공간 경고' 섹션에서 조정합니다.\n\n" +
+            "  • 용량 초과 시 경고 알림 — on/off\n" +
+            "  • 로그 임계값 — 이벤트 로그 + 자막 로그 합산 기준 (MB)\n" +
+            "  • 영상 임계값 — 녹화 파일 합산 기준 (GB)\n" +
+            "  • 현재 사용량이 실시간으로 표시됩니다.\n\n" +
+            "경고는 앱 시작 시 1회, 이후 1시간 간격으로 확인합니다.\n" +
+            "용량 정리는 각 탭의 '폴더 열기' 버튼으로 직접 할 수 있습니다.");
+
+        AppendSeparator();
+
         AppendHeader("시작 프로그램 관리");
         AppendBody(
             "Windows 설정 → 앱 → 시작 프로그램 에서\n" +
@@ -217,7 +234,7 @@ internal partial class HelpForm : Form
         AppendHeader("만든 사람");
         AppendBody(
             "제작자: jaeho\n" +
-            "버전:   v1.06.01\n" +
+            "버전:   v1.06.11\n" +
             "메일:   jaeho9697@gmail.com");
 
         rtb.SelectionStart = 0;
