@@ -31,6 +31,24 @@ internal sealed class MonitorSettings
     internal string KakaoAccessToken        { get; set; } = string.Empty;
     internal string KakaoRefreshToken       { get; set; } = string.Empty;
 
+    // 번역/자막
+    internal bool   TranslationEnabled      { get; set; } = false;
+    internal bool   DeepLTranslationEnabled { get; set; } = true;
+    internal List<VoskModelEntry> VoskModels      { get; set; } = new();
+    internal int                  ActiveVoskModelIndex { get; set; } = 0;
+    internal VoskModelEntry? ActiveVoskModel =>
+        VoskModels.Count > 0 && ActiveVoskModelIndex < VoskModels.Count
+            ? VoskModels[ActiveVoskModelIndex] : null;
+    internal string DeepLApiKey             { get; set; } = string.Empty;
+    internal string TranslationSourceLang   { get; set; } = "auto";
+    internal string TranslationTargetLang   { get; set; } = "KO";
+    internal bool   ShowOriginalText        { get; set; } = true;
+    internal bool   LogTranslation          { get; set; } = true;
+    internal int    OverlayX                { get; set; } = 100;
+    internal int    OverlayY                { get; set; } = 800;
+    internal int    OverlayWidth            { get; set; } = 600;
+    internal int    OverlayHeight           { get; set; } = 200;
+
     // JSON에 저장되는 DTO — 민감 문자열은 DPAPI 암호화된 Base64
     private sealed class Dto
     {
@@ -52,6 +70,27 @@ internal sealed class MonitorSettings
         public string KakaoKey       { get; set; } = string.Empty;
         public string KakaoAccess    { get; set; } = string.Empty;
         public string KakaoRefresh   { get; set; } = string.Empty;
+        // 번역/자막
+        public bool   TransOn        { get; set; }
+        public bool   DeepLOn        { get; set; } = true;
+        public string VoskPath       { get; set; } = string.Empty;  // 이전 버전 마이그레이션용
+        public List<ModelEntryDto> VoskList { get; set; } = new();
+        public int    VoskIdx        { get; set; } = 0;
+        public string DeepLKey       { get; set; } = string.Empty;
+
+        public sealed class ModelEntryDto
+        {
+            public string N { get; set; } = string.Empty;
+            public string P { get; set; } = string.Empty;
+        }
+        public string SrcLang        { get; set; } = "auto";
+        public string TgtLang        { get; set; } = "KO";
+        public bool   ShowOrig       { get; set; } = true;
+        public bool   LogTrans       { get; set; } = true;
+        public int    OvX            { get; set; } = 100;
+        public int    OvY            { get; set; } = 800;
+        public int    OvW            { get; set; } = 600;
+        public int    OvH            { get; set; } = 200;
     }
 
     internal static MonitorSettings Load()
@@ -82,6 +121,24 @@ internal sealed class MonitorSettings
             s.KakaoAppKey            = Decrypt(dto.KakaoKey);
             s.KakaoAccessToken       = Decrypt(dto.KakaoAccess);
             s.KakaoRefreshToken      = Decrypt(dto.KakaoRefresh);
+            s.TranslationEnabled      = dto.TransOn;
+            s.DeepLTranslationEnabled = dto.DeepLOn;
+            s.VoskModels = dto.VoskList
+                .Select(e => new VoskModelEntry { Name = e.N, Path = e.P })
+                .ToList();
+            // 이전 버전(단일 경로) 마이그레이션
+            if (s.VoskModels.Count == 0 && !string.IsNullOrEmpty(dto.VoskPath))
+                s.VoskModels.Add(new VoskModelEntry { Name = "기본", Path = dto.VoskPath });
+            s.ActiveVoskModelIndex = Math.Clamp(dto.VoskIdx, 0, Math.Max(0, s.VoskModels.Count - 1));
+            s.DeepLApiKey             = Decrypt(dto.DeepLKey);
+            s.TranslationSourceLang   = dto.SrcLang;
+            s.TranslationTargetLang   = dto.TgtLang;
+            s.ShowOriginalText        = dto.ShowOrig;
+            s.LogTranslation          = dto.LogTrans;
+            s.OverlayX                = dto.OvX;
+            s.OverlayY                = dto.OvY;
+            s.OverlayWidth            = dto.OvW;
+            s.OverlayHeight           = dto.OvH;
         }
         catch { /* 파일 손상 시 기본값 사용 */ }
 
@@ -112,6 +169,19 @@ internal sealed class MonitorSettings
             KakaoKey    = Encrypt(KakaoAppKey),
             KakaoAccess = Encrypt(KakaoAccessToken),
             KakaoRefresh= Encrypt(KakaoRefreshToken),
+            TransOn  = TranslationEnabled,
+            DeepLOn  = DeepLTranslationEnabled,
+            VoskList = VoskModels.Select(m => new Dto.ModelEntryDto { N = m.Name, P = m.Path }).ToList(),
+            VoskIdx  = ActiveVoskModelIndex,
+            DeepLKey = Encrypt(DeepLApiKey),
+            SrcLang   = TranslationSourceLang,
+            TgtLang   = TranslationTargetLang,
+            ShowOrig  = ShowOriginalText,
+            LogTrans  = LogTranslation,
+            OvX       = OverlayX,
+            OvY       = OverlayY,
+            OvW       = OverlayWidth,
+            OvH       = OverlayHeight,
         };
 
         File.WriteAllText(FilePath,

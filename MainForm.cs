@@ -1,16 +1,18 @@
 namespace WebCamControl;
 
-public partial class MainForm : Form
+internal partial class MainForm : Form
 {
     private bool _cameraEnabled;
     private bool _micMuted;
 
-    private readonly MonitorSettings  _settings;
-    private readonly TelegramNotifier _telegram;
-    private readonly DiscordNotifier  _discord;
-    private readonly KakaoNotifier    _kakao;
-    private readonly ScreenRecorder   _screenRecorder;
-    private CameraMonitor? _monitor;
+    private readonly MonitorSettings    _settings;
+    private readonly TelegramNotifier   _telegram;
+    private readonly DiscordNotifier    _discord;
+    private readonly KakaoNotifier      _kakao;
+    private readonly ScreenRecorder     _screenRecorder;
+    private readonly RealtimeTranslator _translator = new();
+    private CameraMonitor?              _monitor;
+    private TranslationOverlayForm?     _overlay;
 
     private string SelectedCamera => cmbCamera.SelectedItem as string ?? string.Empty;
     private string SelectedMic    => cmbMic.SelectedItem    as string ?? string.Empty;
@@ -229,6 +231,16 @@ public partial class MainForm : Form
         UpdateRecordButton();
     }
 
+    private async void BtnSubtitleToggle_Click(object? sender, EventArgs e)
+    {
+        if (_overlay != null)
+        {
+            StopSubtitle();
+            return;
+        }
+        await StartSubtitleAsync();
+    }
+
     private void BtnMonitorOptions_Click(object? sender, EventArgs e)
     {
         using var dlg = new MonitorOptionsForm(_settings);
@@ -355,6 +367,137 @@ public partial class MainForm : Form
             EventLogger.Write(message);
     }
 
+    // ── Subtitle / Translation ───────────────────────────────────────────
+
+    private async Task StartSubtitleAsync()
+    {
+        var activeModel = _settings.ActiveVoskModel;
+        if (activeModel == null)
+        {
+            MessageBox.Show("설정 > 번역 탭에서 Vosk 모델을 추가해주세요.",
+                "모델 미설정", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            return;
+        }
+
+        btnSubtitleToggle.Enabled = false;
+        btnSubtitleToggle.Text    = "초기화 중...";
+
+        _translator.VoskModelPath      = activeModel.Path;
+        _translator.DeepLApiKey        = _settings.DeepLApiKey;
+        _translator.TranslationEnabled = _settings.DeepLTranslationEnabled;
+        _translator.SourceLang         = _settings.TranslationSourceLang;
+        _translator.TargetLang         = _settings.TranslationTargetLang;
+
+        try
+        {
+            await _translator.StartAsync();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"자막 시작 실패:\n{ex.Message}", "오류",
+                MessageBoxButtons.OK, MessageBoxIcon.Error);
+            btnSubtitleToggle.Enabled = true;
+            UpdateSubtitleButton();
+            return;
+        }
+
+        var bounds = new Rectangle(_settings.OverlayX, _settings.OverlayY,
+                                   _settings.OverlayWidth, _settings.OverlayHeight);
+        _overlay = new TranslationOverlayForm(_settings.ShowOriginalText, bounds);
+        _overlay.UserClosed += OnOverlayClosed;
+        _overlay.Show();
+
+        _translator.PartialReceived += OnPartialReceived;
+        _translator.TextReceived   += OnTextReceived;
+        _translator.QuotaExceeded  += OnQuotaExceeded;
+
+        btnSubtitleToggle.Enabled = true;
+        UpdateSubtitleButton();
+    }
+
+    private void StopSubtitle()
+    {
+        _translator.PartialReceived -= OnPartialReceived;
+        _translator.TextReceived   -= OnTextReceived;
+        _translator.QuotaExceeded  -= OnQuotaExceeded;
+        _translator.Stop();
+
+        if (_overlay != null)
+        {
+            _overlay.UserClosed -= OnOverlayClosed;
+            SaveOverlayBounds();
+            _overlay.Close();
+            _overlay.Dispose();
+            _overlay = null;
+        }
+
+        if (!IsDisposed && IsHandleCreated)
+            UpdateSubtitleButton();
+    }
+
+    private void SaveOverlayBounds()
+    {
+        if (_overlay == null || _overlay.IsDisposed) return;
+        _settings.OverlayX      = _overlay.Bounds.X;
+        _settings.OverlayY      = _overlay.Bounds.Y;
+        _settings.OverlayWidth  = _overlay.Bounds.Width;
+        _settings.OverlayHeight = _overlay.Bounds.Height;
+        _settings.Save();
+    }
+
+    private void OnOverlayClosed()
+    {
+        if (_overlay == null) return;
+
+        _translator.PartialReceived -= OnPartialReceived;
+        _translator.TextReceived   -= OnTextReceived;
+        _translator.QuotaExceeded  -= OnQuotaExceeded;
+        _translator.Stop();
+        SaveOverlayBounds();
+        _overlay = null;
+
+        RunOnUiThread(UpdateSubtitleButton);
+    }
+
+    private void OnPartialReceived(string partial)
+    {
+        if (_overlay == null || _overlay.IsDisposed) return;
+        _overlay.ShowPartial(partial);
+    }
+
+    private void OnTextReceived(string original, string translated)
+    {
+        if (_overlay == null || _overlay.IsDisposed) return;
+
+        if (_settings.DeepLTranslationEnabled)
+            _overlay.ShowText(original, translated);
+        else
+            _overlay.ShowSubtitle(original);
+
+        if (_settings.LogTranslation)
+        {
+            EventLogger.WriteSubtitle($"원문: {original}");
+            if (_settings.DeepLTranslationEnabled && original != translated)
+                EventLogger.WriteSubtitle($"번역: {translated}");
+        }
+    }
+
+    private void OnQuotaExceeded()
+    {
+        if (_overlay != null && !_overlay.IsDisposed)
+            _overlay.ShowWarning("⚠ DeepL 무료 한도(50만 자) 초과 — 자막만 계속 표시됩니다");
+        Notify("DeepL 무료 한도 초과", "번역이 중단되었습니다. 자막은 계속 표시됩니다.");
+        EventLogger.WriteSubtitle("DeepL 무료 한도 초과 — 번역 중단, 자막 모드로 전환");
+        _translator.TranslationEnabled = false;
+    }
+
+    private void UpdateSubtitleButton()
+    {
+        bool running = _overlay != null;
+        btnSubtitleToggle.Text      = running ? "자막 중지" : "자막 시작";
+        btnSubtitleToggle.ForeColor = running ? Color.Red : Color.DarkSlateBlue;
+    }
+
     private bool IsAnyRecording => _screenRecorder.IsRecording;
 
     private void UpdateRecordButton()
@@ -366,19 +509,15 @@ public partial class MainForm : Form
         lblRecordStatus.ForeColor = rec ? Color.Red : Color.Gray;
     }
 
-    private void UpdateRecordButtonThreadSafe()
+    private void RunOnUiThread(Action action)
     {
-        if (InvokeRequired) Invoke(UpdateRecordButton);
-        else UpdateRecordButton();
+        if (InvokeRequired) Invoke(action);
+        else action();
     }
 
-    private void SetMonitorStatusThreadSafe(string text)
-    {
-        if (InvokeRequired)
-            Invoke(() => SetMonitorStatus(text));
-        else
-            SetMonitorStatus(text);
-    }
+    private void UpdateRecordButtonThreadSafe() => RunOnUiThread(UpdateRecordButton);
+
+    private void SetMonitorStatusThreadSafe(string text) => RunOnUiThread(() => SetMonitorStatus(text));
 
     private void SetMonitorStatus(string text) => lblMonitorStatus.Text = $"상태: {text}";
 
@@ -459,6 +598,8 @@ public partial class MainForm : Form
         _monitor?.Stop();
         _monitor?.Dispose();
         _screenRecorder.Stop();
+        if (_overlay != null) StopSubtitle();
+        _translator.Dispose();
         _telegram.Dispose();
         _discord.Dispose();
         _kakao.Dispose();

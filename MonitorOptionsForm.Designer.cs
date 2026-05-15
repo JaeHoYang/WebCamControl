@@ -9,6 +9,7 @@ partial class MonitorOptionsForm
     private TabControl tabControl    = null!;
     private TabPage    tabGeneral    = null!;
     private TabPage    tabRecording  = null!;
+    private TabPage    tabTranslation = null!;
 
     // 일반 탭 — 감시
     private Label         lblSectionMonitor = null!;
@@ -43,6 +44,28 @@ partial class MonitorOptionsForm
     private Label  lblRecordPath        = null!;
     private Button btnOpenRecordFolder  = null!;
 
+    // 번역 탭
+    private CheckBox  chkTransEnabled = null!;
+    private Label     lblSecVosk      = null!;
+    private ListView  lstVoskModels   = null!;
+    private Button    btnAddModel     = null!;
+    private Button    btnRemoveModel  = null!;
+    private LinkLabel lnkVoskDl       = null!;
+    private Label     lblSecDeepL     = null!;
+    private CheckBox  chkDeepLOn      = null!;
+    private TextBox   txtDeepLKey     = null!;
+    private Button    btnShowKey      = null!;
+    private LinkLabel lnkDeepLGet     = null!;
+    private Label     lblSrcLang      = null!;
+    private ComboBox  cmbSrcLang      = null!;
+    private Label     lblTgtLang      = null!;
+    private ComboBox  cmbTgtLang      = null!;
+    private CheckBox  chkShowOrig     = null!;
+    private Label     lblUsage        = null!;
+    private Button    btnCheckUsage   = null!;
+    private CheckBox  chkLogTrans          = null!;
+    private Button    btnOpenSubtitleFolder = null!;
+
     // 하단 버튼
     private Button btnOk     = null!;
     private Button btnCancel = null!;
@@ -58,6 +81,27 @@ partial class MonitorOptionsForm
         tabControl          = new TabControl();
         tabGeneral          = new TabPage();
         tabRecording        = new TabPage();
+        tabTranslation      = new TabPage();
+        chkTransEnabled     = new CheckBox();
+        lblSecVosk          = new Label();
+        lstVoskModels       = new ListView();
+        btnAddModel         = new Button();
+        btnRemoveModel      = new Button();
+        lnkVoskDl           = new LinkLabel();
+        lblSecDeepL         = new Label();
+        chkDeepLOn          = new CheckBox();
+        txtDeepLKey         = new TextBox();
+        btnShowKey          = new Button();
+        lnkDeepLGet         = new LinkLabel();
+        lblSrcLang          = new Label();
+        cmbSrcLang          = new ComboBox();
+        lblTgtLang          = new Label();
+        cmbTgtLang          = new ComboBox();
+        chkShowOrig         = new CheckBox();
+        lblUsage            = new Label();
+        btnCheckUsage       = new Button();
+        chkLogTrans              = new CheckBox();
+        btnOpenSubtitleFolder    = new Button();
         lblSectionMonitor   = new Label();
         lblInterval         = new Label();
         nudInterval         = new NumericUpDown();
@@ -249,23 +293,170 @@ partial class MonitorOptionsForm
         tabRecording.Controls.Add(lblRecordPath);
         tabRecording.Controls.Add(btnOpenRecordFolder);
 
+        // ── 번역 탭 ──────────────────────────────────────────────────
+
+        chkTransEnabled.Text     = "자막/번역 기능 활성화";
+        chkTransEnabled.Font     = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
+        chkTransEnabled.Location = new Point(8, 8);
+        chkTransEnabled.Size     = new Size(280, 22);
+        chkTransEnabled.CheckedChanged += new EventHandler(ChkTransEnabled_CheckedChanged);
+
+        lblSecVosk.Text      = "── 음성 인식 (Vosk) ─────────────";
+        lblSecVosk.Location  = new Point(8, 36);
+        lblSecVosk.Size      = new Size(280, 16);
+        lblSecVosk.Font      = new Font("맑은 고딕", 8.5F, FontStyle.Bold);
+        lblSecVosk.ForeColor = Color.DimGray;
+
+        lstVoskModels.Location      = new Point(8, 56);
+        lstVoskModels.Size          = new Size(280, 70);
+        lstVoskModels.Font          = new Font("맑은 고딕", 9F);
+        lstVoskModels.View          = View.Details;
+        lstVoskModels.FullRowSelect = true;
+        lstVoskModels.MultiSelect   = false;
+        lstVoskModels.HeaderStyle   = ColumnHeaderStyle.Nonclickable;
+        lstVoskModels.Columns.Add("모델명", 84);
+        lstVoskModels.Columns.Add("경로",  192);
+        lstVoskModels.Click        += new EventHandler(LstVoskModels_Click);
+
+        btnAddModel.Location  = new Point(8, 130);
+        btnAddModel.Size      = new Size(70, 24);
+        btnAddModel.Font      = new Font("맑은 고딕", 9F);
+        btnAddModel.Text      = "추가";
+        btnAddModel.Click    += new EventHandler(BtnAddModel_Click);
+
+        btnRemoveModel.Location  = new Point(82, 130);
+        btnRemoveModel.Size      = new Size(70, 24);
+        btnRemoveModel.Font      = new Font("맑은 고딕", 9F);
+        btnRemoveModel.Text      = "삭제";
+        btnRemoveModel.Click    += new EventHandler(BtnRemoveModel_Click);
+
+        lnkVoskDl.Text      = "↗ Vosk 모델 다운로드 (alphacephei.com/vosk/models)";
+        lnkVoskDl.Location  = new Point(8, 159);
+        lnkVoskDl.Size      = new Size(280, 18);
+        lnkVoskDl.Font      = new Font("맑은 고딕", 8.5F);
+        lnkVoskDl.LinkClicked += new LinkLabelLinkClickedEventHandler(LnkVoskDl_LinkClicked);
+
+        lblSecDeepL.Text      = "── 번역 (DeepL Free API) ─────────";
+        lblSecDeepL.Location  = new Point(8, 183);
+        lblSecDeepL.Size      = new Size(280, 16);
+        lblSecDeepL.Font      = new Font("맑은 고딕", 8.5F, FontStyle.Bold);
+        lblSecDeepL.ForeColor = Color.DimGray;
+
+        chkDeepLOn.Text     = "번역 활성화 (해제 시 자막만 표시)";
+        chkDeepLOn.Font     = new Font("맑은 고딕", 9.5F);
+        chkDeepLOn.Location = new Point(8, 203);
+        chkDeepLOn.Size     = new Size(280, 22);
+        chkDeepLOn.CheckedChanged += new EventHandler(ChkDeepLOn_CheckedChanged);
+
+        txtDeepLKey.Location        = new Point(8, 229);
+        txtDeepLKey.Size            = new Size(252, 25);
+        txtDeepLKey.Font            = new Font("맑은 고딕", 9F);
+        txtDeepLKey.PasswordChar    = '*';
+        txtDeepLKey.PlaceholderText = "DeepL API Key";
+
+        btnShowKey.Location  = new Point(263, 228);
+        btnShowKey.Size      = new Size(25, 26);
+        btnShowKey.Font      = new Font("맑은 고딕", 9F);
+        btnShowKey.Text      = "👁";
+        btnShowKey.Click    += new EventHandler(BtnShowKey_Click);
+
+        lnkDeepLGet.Text      = "↗ DeepL Free API 발급 안내 (500,000자/월 무료)";
+        lnkDeepLGet.Location  = new Point(8, 260);
+        lnkDeepLGet.Size      = new Size(280, 18);
+        lnkDeepLGet.Font      = new Font("맑은 고딕", 8.5F);
+        lnkDeepLGet.LinkClicked += new LinkLabelLinkClickedEventHandler(LnkDeepLGet_LinkClicked);
+
+        lblSrcLang.Text     = "원본:";
+        lblSrcLang.Font     = new Font("맑은 고딕", 9F);
+        lblSrcLang.Location = new Point(8, 285);
+        lblSrcLang.AutoSize = true;
+
+        cmbSrcLang.Location      = new Point(42, 282);
+        cmbSrcLang.Size          = new Size(110, 25);
+        cmbSrcLang.Font          = new Font("맑은 고딕", 9F);
+        cmbSrcLang.DropDownStyle = ComboBoxStyle.DropDownList;
+
+        lblTgtLang.Text     = "번역:";
+        lblTgtLang.Font     = new Font("맑은 고딕", 9F);
+        lblTgtLang.Location = new Point(162, 285);
+        lblTgtLang.AutoSize = true;
+
+        cmbTgtLang.Location      = new Point(196, 282);
+        cmbTgtLang.Size          = new Size(92, 25);
+        cmbTgtLang.Font          = new Font("맑은 고딕", 9F);
+        cmbTgtLang.DropDownStyle = ComboBoxStyle.DropDownList;
+
+        chkShowOrig.Text     = "원문도 자막에 표시";
+        chkShowOrig.Font     = new Font("맑은 고딕", 9.5F);
+        chkShowOrig.Location = new Point(8, 313);
+        chkShowOrig.Size     = new Size(280, 22);
+
+        lblUsage.Location  = new Point(8, 340);
+        lblUsage.Size      = new Size(184, 25);
+        lblUsage.Font      = new Font("맑은 고딕", 9F);
+        lblUsage.Text      = "이번 달: - / - 자";
+        lblUsage.ForeColor = Color.DimGray;
+        lblUsage.TextAlign = ContentAlignment.MiddleLeft;
+
+        btnCheckUsage.Location  = new Point(196, 339);
+        btnCheckUsage.Size      = new Size(92, 26);
+        btnCheckUsage.Font      = new Font("맑은 고딕", 8.5F);
+        btnCheckUsage.Text      = "사용량 조회";
+        btnCheckUsage.Click    += new EventHandler(BtnCheckUsage_Click);
+
+        chkLogTrans.Text     = "원문/번역문 로그 기록";
+        chkLogTrans.Font     = new Font("맑은 고딕", 9.5F);
+        chkLogTrans.Location = new Point(8, 371);
+        chkLogTrans.Size     = new Size(180, 22);
+
+        btnOpenSubtitleFolder.Text      = "폴더 열기";
+        btnOpenSubtitleFolder.Font      = new Font("맑은 고딕", 8.5F);
+        btnOpenSubtitleFolder.Location  = new Point(192, 370);
+        btnOpenSubtitleFolder.Size      = new Size(96, 24);
+        btnOpenSubtitleFolder.ForeColor = Color.DarkSlateBlue;
+        btnOpenSubtitleFolder.Click    += new EventHandler(BtnOpenSubtitleFolder_Click);
+
+        tabTranslation.Text = "번역";
+        tabTranslation.Font = new Font("맑은 고딕", 9F);
+        tabTranslation.Controls.Add(chkTransEnabled);
+        tabTranslation.Controls.Add(lblSecVosk);
+        tabTranslation.Controls.Add(lstVoskModels);
+        tabTranslation.Controls.Add(btnAddModel);
+        tabTranslation.Controls.Add(btnRemoveModel);
+        tabTranslation.Controls.Add(lnkVoskDl);
+        tabTranslation.Controls.Add(lblSecDeepL);
+        tabTranslation.Controls.Add(chkDeepLOn);
+        tabTranslation.Controls.Add(txtDeepLKey);
+        tabTranslation.Controls.Add(btnShowKey);
+        tabTranslation.Controls.Add(lnkDeepLGet);
+        tabTranslation.Controls.Add(lblSrcLang);
+        tabTranslation.Controls.Add(cmbSrcLang);
+        tabTranslation.Controls.Add(lblTgtLang);
+        tabTranslation.Controls.Add(cmbTgtLang);
+        tabTranslation.Controls.Add(chkShowOrig);
+        tabTranslation.Controls.Add(lblUsage);
+        tabTranslation.Controls.Add(btnCheckUsage);
+        tabTranslation.Controls.Add(chkLogTrans);
+        tabTranslation.Controls.Add(btnOpenSubtitleFolder);
+
         // ── TabControl ────────────────────────────────────────────────
 
         tabControl.Location = new Point(8, 8);
-        tabControl.Size     = new Size(300, 298);
+        tabControl.Size     = new Size(300, 422);
         tabControl.Font     = new Font("맑은 고딕", 9F);
         tabControl.TabPages.Add(tabGeneral);
         tabControl.TabPages.Add(tabRecording);
+        tabControl.TabPages.Add(tabTranslation);
 
         // ── 하단 버튼 ─────────────────────────────────────────────────
 
-        btnOk.Location  = new Point(8, 316);
+        btnOk.Location  = new Point(8, 438);
         btnOk.Size      = new Size(140, 32);
         btnOk.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
         btnOk.Text      = "확인";
         btnOk.Click    += new EventHandler(BtnOk_Click);
 
-        btnCancel.Location  = new Point(160, 316);
+        btnCancel.Location  = new Point(160, 438);
         btnCancel.Size      = new Size(140, 32);
         btnCancel.Font      = new Font("맑은 고딕", 9.5F);
         btnCancel.Text      = "취소";
@@ -275,7 +466,7 @@ partial class MonitorOptionsForm
 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode       = AutoScaleMode.Font;
-        ClientSize          = new Size(316, 360);
+        ClientSize          = new Size(316, 482);
         Controls.Add(tabControl);
         Controls.Add(btnOk);
         Controls.Add(btnCancel);

@@ -25,9 +25,10 @@ partial class MainForm
     private Label  lblMonitorStatus         = null!;
 
     // 녹화 컨트롤
-    private Label  lblSectionRecord = null!;
-    private Button btnRecordToggle  = null!;
-    private Label  lblRecordStatus  = null!;
+    private Label  lblSectionRecord  = null!;
+    private Button btnRecordToggle   = null!;
+    private Button btnSubtitleToggle = null!;
+    private Label  lblRecordStatus   = null!;
 
     // 시스템 트레이
     private NotifyIcon        notifyIcon      = null!;
@@ -61,6 +62,7 @@ partial class MainForm
         lblMonitorStatus        = new Label();
         lblSectionRecord        = new Label();
         btnRecordToggle         = new Button();
+        btnSubtitleToggle       = new Button();
         lblRecordStatus         = new Label();
         trayMenuOpen            = new ToolStripMenuItem();
         trayMenuExit            = new ToolStripMenuItem();
@@ -169,12 +171,21 @@ partial class MainForm
 
         // btnRecordToggle
         btnRecordToggle.Location  = new Point(20, 302);
-        btnRecordToggle.Size      = new Size(260, 30);
+        btnRecordToggle.Size      = new Size(126, 30);
         btnRecordToggle.TabIndex  = 6;
-        btnRecordToggle.Font      = new Font("맑은 고딕", 10.5F, FontStyle.Bold);
+        btnRecordToggle.Font      = new Font("맑은 고딕", 10F, FontStyle.Bold);
         btnRecordToggle.Text      = "녹화 시작";
         btnRecordToggle.ForeColor = Color.DarkRed;
         btnRecordToggle.Click    += new EventHandler(BtnRecordToggle_Click);
+
+        // btnSubtitleToggle
+        btnSubtitleToggle.Location  = new Point(154, 302);
+        btnSubtitleToggle.Size      = new Size(126, 30);
+        btnSubtitleToggle.TabIndex  = 7;
+        btnSubtitleToggle.Font      = new Font("맑은 고딕", 10F, FontStyle.Bold);
+        btnSubtitleToggle.Text      = "자막 시작";
+        btnSubtitleToggle.ForeColor = Color.DarkSlateBlue;
+        btnSubtitleToggle.Click    += new EventHandler(BtnSubtitleToggle_Click);
 
         // lblRecordStatus
         lblRecordStatus.Location  = new Point(20, 336);
@@ -192,7 +203,7 @@ partial class MainForm
         lblAuthor.TextAlign = ContentAlignment.MiddleLeft;
 
         // lblVersion
-        lblVersion.Text      = "v1.05";
+        lblVersion.Text      = "v1.06.01";
         lblVersion.Location  = new Point(120, 366);
         lblVersion.Size      = new Size(60, 18);
         lblVersion.Font      = new Font("맑은 고딕", 8F, FontStyle.Italic);
@@ -246,6 +257,7 @@ partial class MainForm
         Controls.Add(lblMonitorStatus);
         Controls.Add(lblSectionRecord);
         Controls.Add(btnRecordToggle);
+        Controls.Add(btnSubtitleToggle);
         Controls.Add(lblRecordStatus);
         Controls.Add(lblAuthor);
         Controls.Add(lblVersion);

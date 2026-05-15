@@ -6,6 +6,14 @@ internal partial class MonitorOptionsForm : Form
 {
     private readonly MonitorSettings _settings;
 
+    private List<VoskModelEntry> _voskModels  = new();
+    private int                  _activeModelIdx = 0;
+
+    private static readonly string[] SourceLangCodes   = { "auto", "KO", "EN", "JA", "ZH" };
+    private static readonly string[] SourceLangDisplay = { "자동 감지", "한국어", "영어", "일본어", "중국어 (간체)" };
+    private static readonly string[] TargetLangCodes   = { "KO", "EN-US", "JA", "ZH" };
+    private static readonly string[] TargetLangDisplay = { "한국어", "영어 (미국)", "일본어", "중국어 (간체)" };
+
     internal MonitorOptionsForm(MonitorSettings settings)
     {
         InitializeComponent();
@@ -28,6 +36,26 @@ internal partial class MonitorOptionsForm : Form
 
         SetScreenQuality(settings.RecordScreenQuality);
         UpdateRecordScreenControls();
+
+        // 번역 탭
+        chkTransEnabled.Checked = settings.TranslationEnabled;
+        _voskModels    = settings.VoskModels.Select(m => new VoskModelEntry { Name = m.Name, Path = m.Path }).ToList();
+        _activeModelIdx = settings.ActiveVoskModelIndex;
+        PopulateVoskList();
+        chkDeepLOn.Checked      = settings.DeepLTranslationEnabled;
+        txtDeepLKey.Text        = settings.DeepLApiKey;
+        chkShowOrig.Checked     = settings.ShowOriginalText;
+        chkLogTrans.Checked     = settings.LogTranslation;
+
+        cmbSrcLang.Items.AddRange(SourceLangDisplay);
+        int srcIdx = Array.IndexOf(SourceLangCodes, settings.TranslationSourceLang);
+        cmbSrcLang.SelectedIndex = srcIdx >= 0 ? srcIdx : 0;
+
+        cmbTgtLang.Items.AddRange(TargetLangDisplay);
+        int tgtIdx = Array.IndexOf(TargetLangCodes, settings.TranslationTargetLang);
+        cmbTgtLang.SelectedIndex = tgtIdx >= 0 ? tgtIdx : 0;
+
+        UpdateTranslationControls();
     }
 
     // ── 일반 탭 ─────────────────────────────────────────────────────────
@@ -96,6 +124,141 @@ internal partial class MonitorOptionsForm : Form
         Process.Start("explorer.exe", ScreenRecorder.SaveDirectory);
     }
 
+    // ── 번역 탭 ─────────────────────────────────────────────────────────
+
+    private void UpdateTranslationControls()
+    {
+        bool featureOn = chkTransEnabled.Checked;
+        lstVoskModels.Enabled  = featureOn;
+        btnAddModel.Enabled    = featureOn;
+        btnRemoveModel.Enabled = featureOn;
+        lnkVoskDl.Enabled      = featureOn;
+        lblSecDeepL.Enabled    = featureOn;
+        chkDeepLOn.Enabled     = featureOn;
+        UpdateDeepLControls();
+    }
+
+    private void UpdateDeepLControls()
+    {
+        bool deepLOn = chkTransEnabled.Checked && chkDeepLOn.Checked;
+        txtDeepLKey.Enabled   = deepLOn;
+        btnShowKey.Enabled    = deepLOn;
+        lnkDeepLGet.Enabled   = deepLOn;
+        lblSrcLang.Enabled    = deepLOn;
+        cmbSrcLang.Enabled    = deepLOn;
+        lblTgtLang.Enabled    = deepLOn;
+        cmbTgtLang.Enabled    = deepLOn;
+        btnCheckUsage.Enabled = deepLOn;
+    }
+
+    private void ChkTransEnabled_CheckedChanged(object? sender, EventArgs e) =>
+        UpdateTranslationControls();
+
+    private void ChkDeepLOn_CheckedChanged(object? sender, EventArgs e) =>
+        UpdateDeepLControls();
+
+    private void PopulateVoskList()
+    {
+        lstVoskModels.Items.Clear();
+        for (int i = 0; i < _voskModels.Count; i++)
+        {
+            var item = new ListViewItem(_voskModels[i].Name);
+            item.SubItems.Add(_voskModels[i].Path);
+            if (i == _activeModelIdx)
+            {
+                item.BackColor = Color.LightBlue;
+                item.Font      = new Font(lstVoskModels.Font, FontStyle.Bold);
+            }
+            lstVoskModels.Items.Add(item);
+        }
+    }
+
+    private void LstVoskModels_Click(object? sender, EventArgs e)
+    {
+        if (lstVoskModels.SelectedIndices.Count == 0) return;
+        _activeModelIdx = lstVoskModels.SelectedIndices[0];
+        PopulateVoskList();
+    }
+
+    private void BtnAddModel_Click(object? sender, EventArgs e)
+    {
+        using var dlg = new VoskModelEntryForm();
+        if (dlg.ShowDialog(this) != DialogResult.OK) return;
+        _voskModels.Add(new VoskModelEntry { Name = dlg.ModelName, Path = dlg.ModelPath });
+        if (_voskModels.Count == 1) _activeModelIdx = 0;
+        PopulateVoskList();
+    }
+
+    private void BtnRemoveModel_Click(object? sender, EventArgs e)
+    {
+        if (lstVoskModels.SelectedIndices.Count == 0) return;
+        int idx = lstVoskModels.SelectedIndices[0];
+        _voskModels.RemoveAt(idx);
+        _activeModelIdx = Math.Clamp(_activeModelIdx, 0, Math.Max(0, _voskModels.Count - 1));
+        PopulateVoskList();
+    }
+
+    private void BtnShowKey_Click(object? sender, EventArgs e)
+    {
+        txtDeepLKey.PasswordChar = txtDeepLKey.PasswordChar == '\0' ? '*' : '\0';
+        btnShowKey.Text          = txtDeepLKey.PasswordChar == '\0' ? "🔒" : "👁";
+    }
+
+    private void LnkVoskDl_LinkClicked(object? sender, LinkLabelLinkClickedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName        = "https://alphacephei.com/vosk/models",
+            UseShellExecute = true,
+        });
+    }
+
+    private void LnkDeepLGet_LinkClicked(object? sender, LinkLabelLinkClickedEventArgs e)
+    {
+        Process.Start(new ProcessStartInfo
+        {
+            FileName        = "https://www.deepl.com/pro-api",
+            UseShellExecute = true,
+        });
+    }
+
+    private async void BtnCheckUsage_Click(object? sender, EventArgs e)
+    {
+        string key = txtDeepLKey.Text.Trim();
+        if (string.IsNullOrEmpty(key))
+        {
+            lblUsage.Text      = "API Key를 입력하세요";
+            lblUsage.ForeColor = Color.Red;
+            return;
+        }
+
+        btnCheckUsage.Enabled = false;
+        lblUsage.Text         = "조회 중...";
+        lblUsage.ForeColor    = Color.DimGray;
+
+        try
+        {
+            using var client = new DeepLClient { ApiKey = key };
+            var (used, limit) = await client.GetUsageAsync();
+            long pct = limit > 0 ? used * 100 / limit : 0;
+            lblUsage.Text      = $"이번 달: {used:N0} / {limit:N0} 자 ({pct}%)";
+            lblUsage.ForeColor = pct >= 90 ? Color.DarkOrange : Color.Black;
+        }
+        catch
+        {
+            lblUsage.Text      = "조회 실패 (API Key 확인)";
+            lblUsage.ForeColor = Color.Red;
+        }
+
+        btnCheckUsage.Enabled = true;
+    }
+
+    private void BtnOpenSubtitleFolder_Click(object? sender, EventArgs e)
+    {
+        Directory.CreateDirectory(EventLogger.SubtitleLogDirectory);
+        Process.Start("explorer.exe", EventLogger.SubtitleLogDirectory);
+    }
+
     // ── 확인 / 취소 ─────────────────────────────────────────────────────
 
     private void BtnOk_Click(object? sender, EventArgs e)
@@ -108,6 +271,16 @@ internal partial class MonitorOptionsForm : Form
         _settings.RecordScreenEnabled = chkRecordScreen.Checked;
         _settings.RecordMonitorIndex  = Math.Max(0, cmbRecordMonitor.SelectedIndex);
         _settings.RecordScreenQuality = GetScreenQuality();
+
+        _settings.TranslationEnabled      = chkTransEnabled.Checked;
+        _settings.VoskModels              = _voskModels;
+        _settings.ActiveVoskModelIndex    = _activeModelIdx;
+        _settings.DeepLTranslationEnabled = chkDeepLOn.Checked;
+        _settings.DeepLApiKey             = txtDeepLKey.Text.Trim();
+        _settings.TranslationSourceLang   = SourceLangCodes[Math.Max(0, cmbSrcLang.SelectedIndex)];
+        _settings.TranslationTargetLang   = TargetLangCodes[Math.Max(0, cmbTgtLang.SelectedIndex)];
+        _settings.ShowOriginalText        = chkShowOrig.Checked;
+        _settings.LogTranslation          = chkLogTrans.Checked;
 
         _settings.Save();
         DialogResult = DialogResult.OK;

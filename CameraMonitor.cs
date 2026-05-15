@@ -9,6 +9,13 @@ internal sealed class CameraMonitor : IDisposable
     private bool _wasEnabled;
     private bool _wasInUse;
 
+    // 상태 변화가 이 횟수만큼 연속으로 확인되어야 이벤트를 발생시킴 (깜빡임 방지)
+    private const int DebounceCount = 2;
+    private int _enabledChangeTicks;
+    private int _inUseChangeTicks;
+    private bool _pendingEnabled;
+    private bool _pendingInUse;
+
     internal event Action<string>? CameraEnabled;
     internal event Action<string>? CameraDisabled;
     internal event Action<string>? CameraInUse;
@@ -16,11 +23,14 @@ internal sealed class CameraMonitor : IDisposable
 
     internal CameraMonitor(string deviceName, double intervalMs = 3000)
     {
-        _deviceName = deviceName;
-        _wasEnabled = CameraController.IsEnabled(deviceName);
-        _wasInUse   = IsCurrentlyInUse();
+        _deviceName  = deviceName;
+        _wasEnabled  = CameraController.IsEnabled(deviceName);
+        _wasInUse    = IsCurrentlyInUse();
+        _pendingEnabled = _wasEnabled;
+        _pendingInUse   = _wasInUse;
 
-        _timer = new System.Timers.Timer(intervalMs) { AutoReset = true };
+        // AutoReset=false: 핸들러 완료 후 직접 재시작 → 타이머 중복 실행 방지
+        _timer = new System.Timers.Timer(intervalMs) { AutoReset = false };
         _timer.Elapsed += OnTick;
     }
 
@@ -29,29 +39,68 @@ internal sealed class CameraMonitor : IDisposable
 
     internal void UpdateDevice(string deviceName)
     {
-        _deviceName = deviceName;
-        _wasEnabled = CameraController.IsEnabled(deviceName);
+        _deviceName     = deviceName;
+        _wasEnabled     = CameraController.IsEnabled(deviceName);
+        _pendingEnabled = _wasEnabled;
+        _enabledChangeTicks = 0;
     }
 
     private void OnTick(object? sender, System.Timers.ElapsedEventArgs e)
     {
-        bool nowEnabled = CameraController.IsEnabled(_deviceName);
-        bool nowInUse   = IsCurrentlyInUse();
+        try
+        {
+            bool nowEnabled = CameraController.IsEnabled(_deviceName);
+            bool nowInUse   = IsCurrentlyInUse();
 
-        if (!_wasEnabled && nowEnabled)
-            CameraEnabled?.Invoke(_deviceName);
+            // 활성화 상태 디바운스
+            if (nowEnabled != _pendingEnabled)
+            {
+                _pendingEnabled     = nowEnabled;
+                _enabledChangeTicks = 1;
+            }
+            else if (nowEnabled != _wasEnabled)
+            {
+                _enabledChangeTicks++;
+                if (_enabledChangeTicks >= DebounceCount)
+                {
+                    _wasEnabled         = nowEnabled;
+                    _enabledChangeTicks = 0;
+                    if (nowEnabled) CameraEnabled?.Invoke(_deviceName);
+                    else            CameraDisabled?.Invoke(_deviceName);
+                }
+            }
+            else
+            {
+                _enabledChangeTicks = 0;
+            }
 
-        if (_wasEnabled && !nowEnabled)
-            CameraDisabled?.Invoke(_deviceName);
-
-        if (!_wasInUse && nowInUse)
-            CameraInUse?.Invoke(_deviceName);
-
-        if (_wasInUse && !nowInUse)
-            CameraReleased?.Invoke(_deviceName);
-
-        _wasEnabled = nowEnabled;
-        _wasInUse   = nowInUse;
+            // 사용 상태 디바운스
+            if (nowInUse != _pendingInUse)
+            {
+                _pendingInUse     = nowInUse;
+                _inUseChangeTicks = 1;
+            }
+            else if (nowInUse != _wasInUse)
+            {
+                _inUseChangeTicks++;
+                if (_inUseChangeTicks >= DebounceCount)
+                {
+                    _wasInUse         = nowInUse;
+                    _inUseChangeTicks = 0;
+                    if (nowInUse) CameraInUse?.Invoke(_deviceName);
+                    else          CameraReleased?.Invoke(_deviceName);
+                }
+            }
+            else
+            {
+                _inUseChangeTicks = 0;
+            }
+        }
+        finally
+        {
+            // 핸들러가 완전히 끝난 뒤 타이머 재시작
+            _timer.Start();
+        }
     }
 
     /// <summary>

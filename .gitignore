@@ -49,6 +49,8 @@ artifacts/
 *.exe
 !icon.ico
 !installer/WebCamControl_Setup_v1.05.exe
+!installer/WebCamControl_Setup_v1.06.exe
+!installer/WebCamControl_Setup_v1.06.01.exe
 
 # =====================
 # Docs
