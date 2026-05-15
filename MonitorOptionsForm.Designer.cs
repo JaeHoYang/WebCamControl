@@ -574,7 +574,7 @@ partial class MonitorOptionsForm
         // ── TabControl ────────────────────────────────────────────────
 
         tabControl.Location = new Point(8, 8);
-        tabControl.Size     = new Size(300, 422);
+        tabControl.Size     = new Size(336, 422);
         tabControl.Font     = new Font("맑은 고딕", 9F);
         tabControl.TabPages.Add(tabGeneral);
         tabControl.TabPages.Add(tabRecording);
@@ -583,13 +583,13 @@ partial class MonitorOptionsForm
         // ── 하단 버튼 ─────────────────────────────────────────────────
 
         btnOk.Location  = new Point(8, 438);
-        btnOk.Size      = new Size(140, 32);
+        btnOk.Size      = new Size(168, 32);
         btnOk.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
         btnOk.Text      = "확인";
         btnOk.Click    += new EventHandler(BtnOk_Click);
 
-        btnCancel.Location  = new Point(160, 438);
-        btnCancel.Size      = new Size(140, 32);
+        btnCancel.Location  = new Point(184, 438);
+        btnCancel.Size      = new Size(168, 32);
         btnCancel.Font      = new Font("맑은 고딕", 9.5F);
         btnCancel.Text      = "취소";
         btnCancel.Click    += new EventHandler(BtnCancel_Click);
@@ -598,7 +598,7 @@ partial class MonitorOptionsForm
 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode       = AutoScaleMode.Font;
-        ClientSize          = new Size(316, 482);
+        ClientSize          = new Size(352, 482);
         Controls.Add(tabControl);
         Controls.Add(btnOk);
         Controls.Add(btnCancel);
