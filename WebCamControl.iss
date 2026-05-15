@@ -1,5 +1,5 @@
 #define MyAppName       "WebCam Controller"
-#define MyAppVersion    "1.06.11"
+#define MyAppVersion    "1.06.21"
 #define MyAppPublisher  "jaeho"
 #define MyAppContact    "jaeho9697@gmail.com"
 #define MyAppExeName    "WebCamControl.exe"
@@ -64,6 +64,55 @@ Filename: "schtasks"; \
   Flags: runhidden; RunOnceId: "RemoveStartupTask"
 
 [Code]
+var
+  UseCustomDirPage: TInputOptionWizardPage;
+  DataRootPage:     TInputDirWizardPage;
+
+procedure InitializeWizard;
+begin
+  UseCustomDirPage := CreateInputOptionPage(
+    wpReady,
+    '데이터 저장 위치',
+    '로그, 자막, 녹화 파일이 저장될 위치를 선택합니다.',
+    '데이터 저장 위치를 어떻게 설정하시겠습니까?',
+    True, False);
+  UseCustomDirPage.Add('기본 위치 사용 (%AppData%\Local\WebCamControl)');
+  UseCustomDirPage.Add('사용자 지정 위치 선택 (WebCamData 폴더 자동 생성)');
+  UseCustomDirPage.SelectedValueIndex := 0;
+
+  DataRootPage := CreateInputDirPage(
+    UseCustomDirPage.ID,
+    '사용자 지정 저장 위치',
+    '선택한 폴더 아래에 "WebCamData" 폴더가 자동으로 생성됩니다.',
+    '예: D:\ 선택 시 → D:\WebCamData\ 에 로그·영상이 저장됩니다.',
+    False, '');
+  DataRootPage.Add('저장 루트 폴더:');
+  DataRootPage.Values[0] := 'C:\';
+end;
+
+function ShouldSkipPage(PageID: Integer): Boolean;
+begin
+  Result := False;
+  if PageID = DataRootPage.ID then
+    Result := (UseCustomDirPage.SelectedValueIndex = 0);
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  BootstrapDir, BootstrapFile, DataRootValue: String;
+begin
+  if CurStep = ssPostInstall then
+  begin
+    if UseCustomDirPage.SelectedValueIndex = 0 then Exit;
+    DataRootValue := Trim(DataRootPage.Values[0]);
+    if DataRootValue = '' then Exit;
+    BootstrapDir := ExpandConstant('{localappdata}\WebCamControl');
+    if not ForceDirectories(BootstrapDir) then Exit;
+    BootstrapFile := BootstrapDir + '\dataroot_bootstrap.txt';
+    SaveStringToFile(BootstrapFile, DataRootValue, False);
+  end;
+end;
+
 // .NET 8 Windows Desktop Runtime 설치 여부 확인
 function IsDotNet8Installed(): Boolean;
 var

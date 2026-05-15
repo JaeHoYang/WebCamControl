@@ -37,12 +37,15 @@ internal partial class MonitorOptionsForm : Form
         SetScreenQuality(settings.RecordScreenQuality);
         UpdateRecordScreenControls();
 
-        // 저장 공간 경고 탭
+        // 저장 공간 경고
         chkStorageWarning.Checked = settings.StorageWarningEnabled;
         nudLogWarnMB.Value        = Math.Clamp(settings.LogSizeWarningMB, 10, 10000);
         nudRecWarnGB.Value        = Math.Clamp(settings.RecordSizeWarningMB / 1024, 1, 1000);
         UpdateStorageWarningControls();
         RefreshCurrentUsage();
+
+        // 저장 폴더
+        UpdateDataRootDisplay(settings.DataRootParent);
 
         // 번역 탭
         chkTransEnabled.Checked = settings.TranslationEnabled;
@@ -106,6 +109,41 @@ internal partial class MonitorOptionsForm : Form
 
     private static string FormatSizeMB(long mb)
         => mb >= 1024 ? $"{mb / 1024.0:F1} GB" : $"{mb:N0} MB";
+
+    // ── 저장 폴더 ─────────────────────────────────────────────────────────
+
+    private void UpdateDataRootDisplay(string parentPath)
+    {
+        if (string.IsNullOrEmpty(parentPath))
+        {
+            txtDataRootParent.Text        = string.Empty;
+            txtDataRootParent.PlaceholderText = $"기본값 ({EventLogger.DataRoot})";
+            lblDataRootPreview.Text       = $"→ {EventLogger.DataRoot}";
+        }
+        else
+        {
+            txtDataRootParent.Text  = parentPath;
+            lblDataRootPreview.Text = $"→ {Path.Combine(parentPath, "WebCamData")}";
+        }
+    }
+
+    private void BtnBrowseDataRoot_Click(object? sender, EventArgs e)
+    {
+        using var dlg = new FolderBrowserDialog
+        {
+            Description            = "WebCamData 폴더가 생성될 상위 폴더를 선택하세요",
+            UseDescriptionForTitle = true,
+            ShowNewFolderButton    = true,
+        };
+        if (!string.IsNullOrEmpty(txtDataRootParent.Text))
+            dlg.InitialDirectory = txtDataRootParent.Text;
+
+        if (dlg.ShowDialog(this) == DialogResult.OK)
+            UpdateDataRootDisplay(dlg.SelectedPath);
+    }
+
+    private void BtnResetDataRoot_Click(object? sender, EventArgs e) =>
+        UpdateDataRootDisplay(string.Empty);
 
     private void BtnOpenFolder_Click(object? sender, EventArgs e)
     {
@@ -313,6 +351,7 @@ internal partial class MonitorOptionsForm : Form
         _settings.StorageWarningEnabled = chkStorageWarning.Checked;
         _settings.LogSizeWarningMB      = (int)nudLogWarnMB.Value;
         _settings.RecordSizeWarningMB   = (int)nudRecWarnGB.Value * 1024;
+        _settings.DataRootParent        = txtDataRootParent.Text.Trim();
 
         _settings.TranslationEnabled      = chkTransEnabled.Checked;
         _settings.VoskModels              = _voskModels;

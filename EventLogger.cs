@@ -4,30 +4,29 @@ namespace WebCamControl;
 
 internal static class EventLogger
 {
-    private static readonly string LogDir =
+    // 디스크 공간 부족 시 true — Write/WriteSubtitle 호출을 모두 무시
+    internal static bool DiskSpaceLow { get; set; } = false;
+
+    internal static string DataRoot { get; set; } =
         Path.Combine(
             Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "WebCamControl", "logs");
+            "WebCamControl");
 
-    private static readonly string SubtitleDir =
-        Path.Combine(
-            Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-            "WebCamControl", "subtitle_logs");
-
-    internal static string LogDirectory      => LogDir;
-    internal static string SubtitleLogDirectory => SubtitleDir;
+    internal static string LogDirectory         => Path.Combine(DataRoot, "logs");
+    internal static string SubtitleLogDirectory => Path.Combine(DataRoot, "subtitle_logs");
 
     internal static string TodayLogPath =>
-        Path.Combine(LogDir, $"{DateTime.Now:yyyy-MM-dd}.txt");
+        Path.Combine(LogDirectory, $"{DateTime.Now:yyyy-MM-dd}.txt");
 
     internal static string TodaySubtitleLogPath =>
-        Path.Combine(SubtitleDir, $"{DateTime.Now:yyyy-MM-dd}.txt");
+        Path.Combine(SubtitleLogDirectory, $"{DateTime.Now:yyyy-MM-dd}.txt");
 
     internal static void Write(string message)
     {
+        if (DiskSpaceLow) return;
         try
         {
-            Directory.CreateDirectory(LogDir);
+            Directory.CreateDirectory(LogDirectory);
             string line = $"[{DateTime.Now:HH:mm:ss}] {message}";
             File.AppendAllText(TodayLogPath, line + Environment.NewLine, Encoding.UTF8);
         }
@@ -36,9 +35,10 @@ internal static class EventLogger
 
     internal static void WriteSubtitle(string message)
     {
+        if (DiskSpaceLow) return;
         try
         {
-            Directory.CreateDirectory(SubtitleDir);
+            Directory.CreateDirectory(SubtitleLogDirectory);
             string line = $"[{DateTime.Now:HH:mm:ss}] {message}";
             File.AppendAllText(TodaySubtitleLogPath, line + Environment.NewLine, Encoding.UTF8);
         }

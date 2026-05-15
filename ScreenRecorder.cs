@@ -18,9 +18,7 @@ internal sealed class ScreenRecorder : IDisposable
     internal int     Quality       { get; set; } = 1;  // 0=낮음 1=보통 2=높음
     internal string? CurrentFile   { get; private set; }
 
-    internal static string SaveDirectory => Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData),
-        "WebCamControl", "recordings");
+    internal static string SaveDirectory => Path.Combine(EventLogger.DataRoot, "recordings");
 
     private int Fps         => Quality switch { 0 => 5, 2 => 15, _ => 10 };
     private int JpegQuality => Quality switch { 0 => 30, 2 => 90, _ => 60 };

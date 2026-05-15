@@ -13,7 +13,6 @@ internal partial class MainForm : Form
     private readonly RealtimeTranslator _translator = new();
     private CameraMonitor?              _monitor;
     private TranslationOverlayForm?     _overlay;
-    private System.Timers.Timer?        _storageTimer;
 
     private string SelectedCamera => cmbCamera.SelectedItem as string ?? string.Empty;
     private string SelectedMic    => cmbMic.SelectedItem    as string ?? string.Empty;
@@ -23,6 +22,7 @@ internal partial class MainForm : Form
         InitializeComponent();
 
         _settings = MonitorSettings.Load();
+        EventLogger.DataRoot = _settings.EffectiveDataRoot;
         _telegram = new TelegramNotifier { BotToken = _settings.BotToken, ChatId = _settings.ChatId };
         _discord  = new DiscordNotifier  { WebhookUrl = _settings.DiscordWebhookUrl };
         _kakao    = new KakaoNotifier
@@ -225,6 +225,12 @@ internal partial class MainForm : Form
         }
         else
         {
+            if (EventLogger.DiskSpaceLow)
+            {
+                MessageBox.Show("디스크 여유 공간 부족으로 녹화를 시작할 수 없습니다.",
+                    "저장 불가", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
             if (!_settings.RecordScreenEnabled)
             {
                 MessageBox.Show("설정에서 화면 녹화를 활성화해주세요.",
@@ -248,11 +254,54 @@ internal partial class MainForm : Form
 
     private void BtnMonitorOptions_Click(object? sender, EventArgs e)
     {
-        using var dlg = new MonitorOptionsForm(_settings);
-        if (dlg.ShowDialog(this) == DialogResult.OK)
+        string oldRoot = EventLogger.DataRoot;
+        using var dlg  = new MonitorOptionsForm(_settings);
+        if (dlg.ShowDialog(this) != DialogResult.OK) return;
+
+        _screenRecorder.MonitorIndex = _settings.RecordMonitorIndex;
+        _screenRecorder.Quality      = _settings.RecordScreenQuality;
+
+        string newRoot = _settings.EffectiveDataRoot;
+        if (newRoot == oldRoot) return;
+
+        EventLogger.DataRoot = newRoot;
+        var ans = MessageBox.Show(
+            $"데이터 저장 폴더가 변경되었습니다.\n\n기존: {oldRoot}\n변경: {newRoot}\n\n기존 파일을 새 위치로 이동하시겠습니까?",
+            "저장 폴더 변경", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+        if (ans == DialogResult.Yes)
+            TryMoveDataRoot(oldRoot, newRoot);
+    }
+
+    private static void TryMoveDataRoot(string src, string dst)
+    {
+        try
         {
-            _screenRecorder.MonitorIndex = _settings.RecordMonitorIndex;
-            _screenRecorder.Quality      = _settings.RecordScreenQuality;
+            Directory.CreateDirectory(dst);
+            foreach (string sub in new[] { "logs", "subtitle_logs", "recordings" })
+            {
+                string srcSub = Path.Combine(src, sub);
+                string dstSub = Path.Combine(dst, sub);
+                if (!Directory.Exists(srcSub)) continue;
+                if (!Directory.Exists(dstSub))
+                {
+                    Directory.Move(srcSub, dstSub);
+                }
+                else
+                {
+                    foreach (string f in Directory.GetFiles(srcSub, "*", SearchOption.AllDirectories))
+                    {
+                        string rel     = Path.GetRelativePath(srcSub, f);
+                        string dstFile = Path.Combine(dstSub, rel);
+                        Directory.CreateDirectory(Path.GetDirectoryName(dstFile)!);
+                        File.Move(f, dstFile, overwrite: false);
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"파일 이동 중 오류가 발생했습니다:\n{ex.Message}",
+                "이동 실패", MessageBoxButtons.OK, MessageBoxIcon.Warning);
         }
     }
 
@@ -332,7 +381,7 @@ internal partial class MainForm : Form
             : $"📷 웹캠 사용 감지! — {appName} ({deviceName})";
         Notify("📷 웹캠 사용 감지!", notifyBody);
         Log(logMsg);
-        if (_settings.RecordScreenEnabled) _screenRecorder.Start("webcam");
+        if (_settings.RecordScreenEnabled && !EventLogger.DiskSpaceLow) _screenRecorder.Start("webcam");
         UpdateRecordButtonThreadSafe();
         string statusApp = string.IsNullOrEmpty(appName) ? "사용 중!" : appName;
         SetMonitorStatusThreadSafe($"감시 중... [{statusApp}]");
@@ -532,13 +581,40 @@ internal partial class MainForm : Form
 
     private void StartStorageMonitor()
     {
-        CheckStorageSize(showBalloon: false);  // 시작 시 로그만 기록
-        _storageTimer = new System.Timers.Timer(TimeSpan.FromHours(1).TotalMilliseconds) { AutoReset = true };
-        _storageTimer.Elapsed += (_, _) => CheckStorageSize(showBalloon: true);
-        _storageTimer.Start();
+        CheckDiskSpace();    // 드라이브 여유 공간 10% 미만 체크 (알림 + 저장 차단)
+        CheckStorageSize();  // 로그·영상 누적 용량 체크 (로그만 기록)
     }
 
-    private void CheckStorageSize(bool showBalloon = true)
+    private void CheckDiskSpace()
+    {
+        try
+        {
+            string root = Path.GetPathRoot(EventLogger.DataRoot)!;
+            var drive = new DriveInfo(root);
+            double freePercent = (double)drive.AvailableFreeSpace / drive.TotalSize * 100;
+            if (freePercent >= 10.0) return;
+
+            double freeGB  = drive.AvailableFreeSpace / (1024.0 * 1024 * 1024);
+            double totalGB = drive.TotalSize          / (1024.0 * 1024 * 1024);
+            string detail  = $"{drive.Name} 여유 {freeGB:F1} GB / 전체 {totalGB:F0} GB ({freePercent:F1}%)";
+
+            // 플래그 설정 전에 먼저 로그 기록
+            EventLogger.Write($"⚠ 디스크 공간 부족 — {detail} — 로그·영상 저장 비활성화");
+            EventLogger.DiskSpaceLow = true;
+
+            string msg = $"디스크 여유 공간이 10% 미만입니다.\n{detail}\n\n로그 및 영상 저장이 비활성화됩니다.";
+            RunOnUiThread(() =>
+            {
+                if (notifyIcon.Visible)
+                    notifyIcon.ShowBalloonTip(10000, "⚠ 디스크 공간 부족", msg, ToolTipIcon.Warning);
+                else
+                    MessageBox.Show(msg, "⚠ 디스크 공간 부족", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            });
+        }
+        catch { }
+    }
+
+    private void CheckStorageSize()
     {
         if (!_settings.StorageWarningEnabled) return;
 
@@ -553,12 +629,7 @@ internal partial class MainForm : Form
             warnings.Add($"영상: {FormatSizeMB(recMB)} (기준 {FormatSizeMB(_settings.RecordSizeWarningMB)} 초과)");
 
         if (warnings.Count == 0) return;
-
-        string body = string.Join("\n", warnings) + "\n설정에서 폴더를 열어 직접 정리하세요.";
-        Log($"⚠ 저장 공간 경고 — {string.Join(" / ", warnings)}");
-
-        if (showBalloon)
-            RunOnUiThread(() => notifyIcon.ShowBalloonTip(10000, "⚠ 저장 공간 경고", body, ToolTipIcon.Warning));
+        Log($"⚠ 저장 용량 경고 — {string.Join(" / ", warnings)} — 설정에서 폴더를 열어 정리하세요.");
     }
 
     private static long GetDirSizeMB(string path)
@@ -662,8 +733,6 @@ internal partial class MainForm : Form
                 NotifySync("🔴 WebCam Monitor 종료", "프로그램 종료로 감시가 중단되었습니다.");
         }
 
-        _storageTimer?.Stop();
-        _storageTimer?.Dispose();
         _monitor?.Stop();
         _monitor?.Dispose();
         _screenRecorder.Stop();

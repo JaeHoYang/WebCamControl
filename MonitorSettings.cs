@@ -54,6 +54,14 @@ internal sealed class MonitorSettings
     internal int  LogSizeWarningMB      { get; set; } = 100;
     internal int  RecordSizeWarningMB   { get; set; } = 5120;  // 5 GB
 
+    // 데이터 저장 루트 — 비어 있으면 %LocalAppData%\WebCamControl 사용
+    internal string DataRootParent { get; set; } = string.Empty;
+
+    internal string EffectiveDataRoot =>
+        string.IsNullOrEmpty(DataRootParent)
+            ? Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WebCamControl")
+            : Path.Combine(DataRootParent, "WebCamData");
+
     // JSON에 저장되는 DTO — 민감 문자열은 DPAPI 암호화된 Base64
     private sealed class Dto
     {
@@ -97,15 +105,32 @@ internal sealed class MonitorSettings
         public int    OvW            { get; set; } = 600;
         public int    OvH            { get; set; } = 200;
         // 저장 공간 경고
-        public bool StoreWarn  { get; set; } = true;
-        public int  LogWarnMB  { get; set; } = 100;
-        public int  RecWarnMB  { get; set; } = 5120;
+        public bool   StoreWarn  { get; set; } = true;
+        public int    LogWarnMB  { get; set; } = 100;
+        public int    RecWarnMB  { get; set; } = 5120;
+        // 데이터 저장 위치
+        public string DataRoot   { get; set; } = string.Empty;
     }
 
     internal static MonitorSettings Load()
     {
         var s = new MonitorSettings();
-        if (!File.Exists(FilePath)) return s;
+        if (!File.Exists(FilePath))
+        {
+            // 설치 시 Inno Setup이 기록한 부트스트랩 파일로 초기 DataRoot 설정
+            string bootstrap = Path.Combine(Path.GetDirectoryName(FilePath)!, "dataroot_bootstrap.txt");
+            if (File.Exists(bootstrap))
+            {
+                try
+                {
+                    s.DataRootParent = File.ReadAllText(bootstrap, Encoding.UTF8).Trim();
+                    File.Delete(bootstrap);
+                    s.Save();
+                }
+                catch { }
+            }
+            return s;
+        }
 
         try
         {
@@ -151,6 +176,7 @@ internal sealed class MonitorSettings
             s.StorageWarningEnabled   = dto.StoreWarn;
             s.LogSizeWarningMB        = Math.Max(1, dto.LogWarnMB);
             s.RecordSizeWarningMB     = Math.Max(1, dto.RecWarnMB);
+            s.DataRootParent          = dto.DataRoot;
         }
         catch { /* 파일 손상 시 기본값 사용 */ }
 
@@ -197,6 +223,7 @@ internal sealed class MonitorSettings
             StoreWarn = StorageWarningEnabled,
             LogWarnMB = LogSizeWarningMB,
             RecWarnMB = RecordSizeWarningMB,
+            DataRoot  = DataRootParent,
         };
 
         File.WriteAllText(FilePath,

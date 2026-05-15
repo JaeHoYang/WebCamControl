@@ -77,6 +77,13 @@ partial class MonitorOptionsForm
     private Label         lblRecWarnUnit    = null!;
     private Label         lblCurrentUsage   = null!;
 
+    // 일반 탭 — 저장 폴더
+    private Label   lblSectionDataRoot = null!;
+    private TextBox txtDataRootParent  = null!;
+    private Button  btnBrowseDataRoot  = null!;
+    private Button  btnResetDataRoot   = null!;
+    private Label   lblDataRootPreview = null!;
+
     // 하단 버튼
     private Button btnOk     = null!;
     private Button btnCancel = null!;
@@ -134,6 +141,11 @@ partial class MonitorOptionsForm
         nudRecWarnGB        = new NumericUpDown();
         lblRecWarnUnit      = new Label();
         lblCurrentUsage     = new Label();
+        lblSectionDataRoot  = new Label();
+        txtDataRootParent   = new TextBox();
+        btnBrowseDataRoot   = new Button();
+        btnResetDataRoot    = new Button();
+        lblDataRootPreview  = new Label();
         lblSectionScreen    = new Label();
         chkRecordScreen     = new CheckBox();
         lblRecordMonitor    = new Label();
@@ -275,6 +287,36 @@ partial class MonitorOptionsForm
         lblCurrentUsage.ForeColor = Color.Gray;
         lblCurrentUsage.Text      = "현재: 계산 중...";
 
+        lblSectionDataRoot.Text      = "── 저장 폴더 ─────────────────────";
+        lblSectionDataRoot.Location  = new Point(8, 382);
+        lblSectionDataRoot.Size      = new Size(280, 16);
+        lblSectionDataRoot.Font      = new Font("맑은 고딕", 8.5F, FontStyle.Bold);
+        lblSectionDataRoot.ForeColor = Color.DimGray;
+
+        txtDataRootParent.Location        = new Point(8, 404);
+        txtDataRootParent.Size            = new Size(220, 25);
+        txtDataRootParent.Font            = new Font("맑은 고딕", 9F);
+        txtDataRootParent.ReadOnly        = true;
+        txtDataRootParent.BackColor       = SystemColors.Window;
+
+        btnBrowseDataRoot.Location  = new Point(232, 403);
+        btnBrowseDataRoot.Size      = new Size(28, 26);
+        btnBrowseDataRoot.Font      = new Font("맑은 고딕", 9F);
+        btnBrowseDataRoot.Text      = "...";
+        btnBrowseDataRoot.Click    += new EventHandler(BtnBrowseDataRoot_Click);
+
+        btnResetDataRoot.Location  = new Point(264, 403);
+        btnResetDataRoot.Size      = new Size(26, 26);
+        btnResetDataRoot.Font      = new Font("맑은 고딕", 9F);
+        btnResetDataRoot.Text      = "↺";
+        btnResetDataRoot.ForeColor = Color.DimGray;
+        btnResetDataRoot.Click    += new EventHandler(BtnResetDataRoot_Click);
+
+        lblDataRootPreview.Location  = new Point(8, 434);
+        lblDataRootPreview.Size      = new Size(280, 32);
+        lblDataRootPreview.Font      = new Font("맑은 고딕", 7.5F);
+        lblDataRootPreview.ForeColor = Color.SteelBlue;
+
         tabGeneral.Text = "일반";
         tabGeneral.Font = new Font("맑은 고딕", 9F);
         tabGeneral.Controls.Add(lblSectionMonitor);
@@ -298,6 +340,11 @@ partial class MonitorOptionsForm
         tabGeneral.Controls.Add(nudRecWarnGB);
         tabGeneral.Controls.Add(lblRecWarnUnit);
         tabGeneral.Controls.Add(lblCurrentUsage);
+        tabGeneral.Controls.Add(lblSectionDataRoot);
+        tabGeneral.Controls.Add(txtDataRootParent);
+        tabGeneral.Controls.Add(btnBrowseDataRoot);
+        tabGeneral.Controls.Add(btnResetDataRoot);
+        tabGeneral.Controls.Add(lblDataRootPreview);
 
         // ── 화면 녹화 탭 ────────────────────────────────────────────────
 
@@ -525,7 +572,7 @@ partial class MonitorOptionsForm
         // ── TabControl ────────────────────────────────────────────────
 
         tabControl.Location = new Point(8, 8);
-        tabControl.Size     = new Size(300, 422);
+        tabControl.Size     = new Size(300, 494);
         tabControl.Font     = new Font("맑은 고딕", 9F);
         tabControl.TabPages.Add(tabGeneral);
         tabControl.TabPages.Add(tabRecording);
@@ -533,13 +580,13 @@ partial class MonitorOptionsForm
 
         // ── 하단 버튼 ─────────────────────────────────────────────────
 
-        btnOk.Location  = new Point(8, 438);
+        btnOk.Location  = new Point(8, 510);
         btnOk.Size      = new Size(140, 32);
         btnOk.Font      = new Font("맑은 고딕", 9.5F, FontStyle.Bold);
         btnOk.Text      = "확인";
         btnOk.Click    += new EventHandler(BtnOk_Click);
 
-        btnCancel.Location  = new Point(160, 438);
+        btnCancel.Location  = new Point(160, 510);
         btnCancel.Size      = new Size(140, 32);
         btnCancel.Font      = new Font("맑은 고딕", 9.5F);
         btnCancel.Text      = "취소";
@@ -549,7 +596,7 @@ partial class MonitorOptionsForm
 
         AutoScaleDimensions = new SizeF(7F, 15F);
         AutoScaleMode       = AutoScaleMode.Font;
-        ClientSize          = new Size(316, 482);
+        ClientSize          = new Size(316, 554);
         Controls.Add(tabControl);
         Controls.Add(btnOk);
         Controls.Add(btnCancel);

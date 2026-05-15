@@ -238,6 +238,28 @@ internal partial class HelpForm : Form
 
         AppendSeparator();
 
+        AppendHeader("데이터 저장 폴더");
+        AppendBody(
+            "이벤트 로그, 자막 로그, 녹화 영상이 저장되는 위치를\n" +
+            "원하는 드라이브/폴더로 변경할 수 있습니다.\n\n" +
+            "【 폴더 구조 】\n" +
+            "  [지정 폴더]\\\n" +
+            "    WebCamData\\logs\\          ← 이벤트 로그\n" +
+            "    WebCamData\\subtitle_logs\\ ← 자막 로그\n" +
+            "    WebCamData\\recordings\\    ← 녹화 영상\n\n" +
+            "기본값은 %LocalAppData%\\WebCamControl 입니다.\n\n" +
+            "【 변경 방법 】\n" +
+            "설정 → '일반' 탭 → '저장 폴더' 섹션\n" +
+            "  • [...] 버튼으로 상위 폴더 선택\n" +
+            "    → 선택 폴더 아래 WebCamData 가 자동 생성됩니다.\n" +
+            "  • [↺] 버튼으로 기본값 초기화\n" +
+            "  • 확인 클릭 후 기존 파일 이동 여부를 선택할 수 있습니다.\n\n" +
+            "【 설치 시 지정 】\n" +
+            "설치 프로그램에서 '사용자 지정 위치 선택'을 고르면\n" +
+            "설치 완료 후 첫 실행 시 해당 경로가 자동 적용됩니다.");
+
+        AppendSeparator();
+
         AppendHeader("시작 프로그램 관리");
         AppendBody(
             "Windows 설정 → 앱 → 시작 프로그램 에서\n" +
@@ -250,7 +272,7 @@ internal partial class HelpForm : Form
         AppendHeader("만든 사람");
         AppendBody(
             "제작자: jaeho\n" +
-            "버전:   v1.06.11\n" +
+            "버전:   v1.06.21\n" +
             "메일:   jaeho9697@gmail.com");
 
         rtb.SelectionStart = 0;
