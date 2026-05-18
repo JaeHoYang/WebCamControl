@@ -381,7 +381,11 @@ internal partial class MainForm : Form
             : $"📷 웹캠 사용 감지! — {appName} ({deviceName})";
         Notify("📷 웹캠 사용 감지!", notifyBody);
         Log(logMsg);
-        if (_settings.RecordScreenEnabled && !EventLogger.DiskSpaceLow) _screenRecorder.Start("webcam");
+        if (_settings.RecordScreenEnabled && !EventLogger.DiskSpaceLow)
+        {
+            try   { _screenRecorder.Start("webcam"); }
+            catch (Exception ex) { Log($"⚠ 녹화 시작 실패: {ex.Message}"); }
+        }
         UpdateRecordButtonThreadSafe();
         string statusApp = string.IsNullOrEmpty(appName) ? "사용 중!" : appName;
         SetMonitorStatusThreadSafe($"감시 중... [{statusApp}]");
