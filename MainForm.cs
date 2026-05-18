@@ -12,6 +12,7 @@ internal partial class MainForm : Form
     private readonly ScreenRecorder     _screenRecorder;
     private readonly RealtimeTranslator _translator = new();
     private CameraMonitor?              _monitor;
+    private MicrophoneMonitor?          _micMonitor;
     private TranslationOverlayForm?     _overlay;
 
     private string SelectedCamera => cmbCamera.SelectedItem as string ?? string.Empty;
@@ -261,6 +262,15 @@ internal partial class MainForm : Form
         _screenRecorder.MonitorIndex = _settings.RecordMonitorIndex;
         _screenRecorder.Quality      = _settings.RecordScreenQuality;
 
+        // 마이크 감시 설정 변경 반영 (모니터 실행 중일 때만)
+        if (_monitor != null)
+        {
+            if (_settings.MicMonitorEnabled && _micMonitor == null)
+                StartMicMonitor();
+            else if (!_settings.MicMonitorEnabled && _micMonitor != null)
+                StopMicMonitor();
+        }
+
         string newRoot = _settings.EffectiveDataRoot;
         if (newRoot == oldRoot) return;
 
@@ -329,6 +339,9 @@ internal partial class MainForm : Form
 
         _monitor.Start();
 
+        if (_settings.MicMonitorEnabled)
+            StartMicMonitor();
+
         _settings.MonitorEnabled = true;
         _settings.Save();
 
@@ -340,11 +353,45 @@ internal partial class MainForm : Form
         UpdateMonitorButton();
     }
 
+    private void StartMicMonitor()
+    {
+        if (_micMonitor != null) return;
+        _micMonitor = new MicrophoneMonitor(_settings.MonitorIntervalSeconds * 1000.0);
+        _micMonitor.MicrophoneInUse    += OnMicrophoneInUse;
+        _micMonitor.MicrophoneReleased += OnMicrophoneReleased;
+        _micMonitor.Start();
+    }
+
+    private void StopMicMonitor()
+    {
+        _micMonitor?.Stop();
+        _micMonitor?.Dispose();
+        _micMonitor = null;
+    }
+
+    private void OnMicrophoneInUse(string appName)
+    {
+        string title = "🎤 마이크 사용 감지!";
+        string body  = string.IsNullOrEmpty(appName) ? "마이크 사용 중" : $"앱: {appName}";
+        Notify(title, body);
+        Log($"🎤 마이크 사용 감지! — {(string.IsNullOrEmpty(appName) ? "알 수 없는 앱" : appName)}");
+    }
+
+    private void OnMicrophoneReleased(string appName)
+    {
+        string title = "⏹️ 마이크 사용 종료";
+        string body  = string.IsNullOrEmpty(appName) ? "마이크 해제됨" : $"앱: {appName}";
+        Notify(title, body);
+        Log($"⏹️ 마이크 사용 종료 — {(string.IsNullOrEmpty(appName) ? "알 수 없는 앱" : appName)}");
+    }
+
     private void StopMonitoring()
     {
         if (_settings.NotifyOnStartStop)
             Notify("⏹️ 웹캠 감시 종료", "WebCam Monitor 감시를 중지합니다.");
         Log("⏹️ 웹캠 감시 종료");
+
+        StopMicMonitor();
 
         _monitor?.Stop();
         _monitor?.Dispose();
@@ -475,7 +522,8 @@ internal partial class MainForm : Form
 
         var bounds = new Rectangle(_settings.OverlayX, _settings.OverlayY,
                                    _settings.OverlayWidth, _settings.OverlayHeight);
-        _overlay = new TranslationOverlayForm(_settings.ShowOriginalText, bounds);
+        _overlay = new TranslationOverlayForm(_settings.ShowOriginalText, bounds,
+            _settings.OverlayFontSize, _settings.OverlayOpacity, _settings.OverlayBgColorArgb);
         _overlay.UserClosed += OnOverlayClosed;
         _overlay.Show();
 
@@ -739,6 +787,8 @@ internal partial class MainForm : Form
 
         _monitor?.Stop();
         _monitor?.Dispose();
+        _micMonitor?.Stop();
+        _micMonitor?.Dispose();
         _screenRecorder.Stop();
         if (_overlay != null) StopSubtitle();
         _translator.Dispose();

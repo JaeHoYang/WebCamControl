@@ -21,6 +21,7 @@ partial class MonitorOptionsForm
     private Label    lblSectionNotify = null!;
     private CheckBox chkBalloonTips   = null!;
     private CheckBox chkStartStop     = null!;
+    private CheckBox chkMicMonitor    = null!;
 
     // 일반 탭 — 로그
     private Label    lblSectionLog    = null!;
@@ -43,6 +44,7 @@ partial class MonitorOptionsForm
     private Label  lblSectionSave       = null!;
     private Label  lblRecordPath        = null!;
     private Button btnOpenRecordFolder  = null!;
+    private Button btnViewRecordList    = null!;
 
     // 번역 탭
     private CheckBox  chkTransEnabled = null!;
@@ -65,6 +67,17 @@ partial class MonitorOptionsForm
     private Button    btnCheckUsage   = null!;
     private CheckBox  chkLogTrans          = null!;
     private Button    btnOpenSubtitleFolder = null!;
+
+    // 번역 탭 — 오버레이 설정
+    private Label         lblSecOverlay      = null!;
+    private Label         lblOvFont          = null!;
+    private NumericUpDown nudOverlayFont     = null!;
+    private Label         lblOvFontUnit      = null!;
+    private Label         lblOvAlpha         = null!;
+    private NumericUpDown nudOverlayOpacity  = null!;
+    private Label         lblOvAlphaUnit     = null!;
+    private Label         lblOvBg            = null!;
+    private Button        btnOverlayBgColor  = null!;
 
     // 일반 탭 — 저장 공간 경고
     private Label         lblSectionStorage = null!;
@@ -120,6 +133,15 @@ partial class MonitorOptionsForm
         btnCheckUsage       = new Button();
         chkLogTrans              = new CheckBox();
         btnOpenSubtitleFolder    = new Button();
+        lblSecOverlay     = new Label();
+        lblOvFont         = new Label();
+        nudOverlayFont    = new NumericUpDown();
+        lblOvFontUnit     = new Label();
+        lblOvAlpha        = new Label();
+        nudOverlayOpacity = new NumericUpDown();
+        lblOvAlphaUnit    = new Label();
+        lblOvBg           = new Label();
+        btnOverlayBgColor = new Button();
         lblSectionMonitor   = new Label();
         lblInterval         = new Label();
         nudInterval         = new NumericUpDown();
@@ -127,6 +149,7 @@ partial class MonitorOptionsForm
         lblSectionNotify    = new Label();
         chkBalloonTips      = new CheckBox();
         chkStartStop        = new CheckBox();
+        chkMicMonitor       = new CheckBox();
         lblSectionLog       = new Label();
         chkLogEnabled       = new CheckBox();
         lblLogPath          = new Label();
@@ -157,6 +180,7 @@ partial class MonitorOptionsForm
         lblSectionSave      = new Label();
         lblRecordPath       = new Label();
         btnOpenRecordFolder = new Button();
+        btnViewRecordList   = new Button();
         btnOk               = new Button();
         btnCancel           = new Button();
         SuspendLayout();
@@ -203,54 +227,59 @@ partial class MonitorOptionsForm
         chkStartStop.Location = new Point(8, 108);
         chkStartStop.Size     = new Size(280, 22);
 
+        chkMicMonitor.Text     = "마이크 사용 감지 알림";
+        chkMicMonitor.Font     = new Font("맑은 고딕", 9.5F);
+        chkMicMonitor.Location = new Point(8, 134);
+        chkMicMonitor.Size     = new Size(280, 22);
+
         lblSectionLog.Text      = "── 로그 ──────────────────────────";
-        lblSectionLog.Location  = new Point(8, 140);
+        lblSectionLog.Location  = new Point(8, 162);
         lblSectionLog.Size      = new Size(280, 16);
         lblSectionLog.Font      = new Font("맑은 고딕", 8.5F, FontStyle.Bold);
         lblSectionLog.ForeColor = Color.DimGray;
 
         chkLogEnabled.Text     = "날짜별 로그 저장";
         chkLogEnabled.Font     = new Font("맑은 고딕", 9.5F);
-        chkLogEnabled.Location = new Point(8, 162);
+        chkLogEnabled.Location = new Point(8, 184);
         chkLogEnabled.Size     = new Size(280, 22);
         chkLogEnabled.CheckedChanged += new EventHandler(ChkLogEnabled_CheckedChanged);
 
-        lblLogPath.Location  = new Point(8, 188);
+        lblLogPath.Location  = new Point(8, 210);
         lblLogPath.Size      = new Size(280, 16);
         lblLogPath.Font      = new Font("맑은 고딕", 7.5F);
         lblLogPath.ForeColor = Color.Gray;
 
-        btnOpenFolder.Location  = new Point(8, 208);
+        btnOpenFolder.Location  = new Point(8, 230);
         btnOpenFolder.Size      = new Size(134, 28);
         btnOpenFolder.Font      = new Font("맑은 고딕", 9F);
         btnOpenFolder.Text      = "폴더 열기";
         btnOpenFolder.Click    += new EventHandler(BtnOpenFolder_Click);
 
-        btnViewTodayLog.Location  = new Point(148, 208);
+        btnViewTodayLog.Location  = new Point(148, 230);
         btnViewTodayLog.Size      = new Size(140, 28);
         btnViewTodayLog.Font      = new Font("맑은 고딕", 9F);
-        btnViewTodayLog.Text      = "오늘 로그 보기";
+        btnViewTodayLog.Text      = "로그 뷰어";
         btnViewTodayLog.ForeColor = Color.DarkSlateBlue;
         btnViewTodayLog.Click    += new EventHandler(BtnViewTodayLog_Click);
 
         lblSectionStorage.Text      = "── 저장 공간 경고 ────────────────";
-        lblSectionStorage.Location  = new Point(8, 248);
+        lblSectionStorage.Location  = new Point(8, 270);
         lblSectionStorage.Size      = new Size(280, 16);
         lblSectionStorage.Font      = new Font("맑은 고딕", 8.5F, FontStyle.Bold);
         lblSectionStorage.ForeColor = Color.DimGray;
 
         chkStorageWarning.Text     = "용량 초과 시 경고 알림";
         chkStorageWarning.Font     = new Font("맑은 고딕", 9.5F);
-        chkStorageWarning.Location = new Point(8, 270);
+        chkStorageWarning.Location = new Point(8, 292);
         chkStorageWarning.Size     = new Size(280, 22);
         chkStorageWarning.CheckedChanged += new EventHandler(ChkStorageWarning_CheckedChanged);
 
         lblLogWarn.Text     = "로그 임계값:";
         lblLogWarn.Font     = new Font("맑은 고딕", 9F);
-        lblLogWarn.Location = new Point(8, 298);
+        lblLogWarn.Location = new Point(8, 320);
         lblLogWarn.AutoSize = true;
 
-        nudLogWarnMB.Location = new Point(86, 295);
+        nudLogWarnMB.Location = new Point(86, 317);
         nudLogWarnMB.Size     = new Size(72, 25);
         nudLogWarnMB.Font     = new Font("맑은 고딕", 9F);
         nudLogWarnMB.Minimum  = 10;
@@ -259,16 +288,16 @@ partial class MonitorOptionsForm
 
         lblLogWarnUnit.Text      = "MB";
         lblLogWarnUnit.Font      = new Font("맑은 고딕", 9F);
-        lblLogWarnUnit.Location  = new Point(162, 298);
+        lblLogWarnUnit.Location  = new Point(162, 320);
         lblLogWarnUnit.AutoSize  = true;
         lblLogWarnUnit.ForeColor = Color.DimGray;
 
         lblRecWarn.Text     = "영상 임계값:";
         lblRecWarn.Font     = new Font("맑은 고딕", 9F);
-        lblRecWarn.Location = new Point(8, 326);
+        lblRecWarn.Location = new Point(8, 348);
         lblRecWarn.AutoSize = true;
 
-        nudRecWarnGB.Location = new Point(86, 323);
+        nudRecWarnGB.Location = new Point(86, 345);
         nudRecWarnGB.Size     = new Size(72, 25);
         nudRecWarnGB.Font     = new Font("맑은 고딕", 9F);
         nudRecWarnGB.Minimum  = 1;
@@ -277,42 +306,42 @@ partial class MonitorOptionsForm
 
         lblRecWarnUnit.Text      = "GB";
         lblRecWarnUnit.Font      = new Font("맑은 고딕", 9F);
-        lblRecWarnUnit.Location  = new Point(162, 326);
+        lblRecWarnUnit.Location  = new Point(162, 348);
         lblRecWarnUnit.AutoSize  = true;
         lblRecWarnUnit.ForeColor = Color.DimGray;
 
-        lblCurrentUsage.Location  = new Point(8, 354);
+        lblCurrentUsage.Location  = new Point(8, 376);
         lblCurrentUsage.Size      = new Size(280, 16);
         lblCurrentUsage.Font      = new Font("맑은 고딕", 8F);
         lblCurrentUsage.ForeColor = Color.Gray;
         lblCurrentUsage.Text      = "현재: 계산 중...";
 
         lblSectionDataRoot.Text      = "── 저장 폴더 ─────────────────────";
-        lblSectionDataRoot.Location  = new Point(8, 382);
+        lblSectionDataRoot.Location  = new Point(8, 404);
         lblSectionDataRoot.Size      = new Size(280, 16);
         lblSectionDataRoot.Font      = new Font("맑은 고딕", 8.5F, FontStyle.Bold);
         lblSectionDataRoot.ForeColor = Color.DimGray;
 
-        txtDataRootParent.Location        = new Point(8, 404);
+        txtDataRootParent.Location        = new Point(8, 426);
         txtDataRootParent.Size            = new Size(220, 25);
         txtDataRootParent.Font            = new Font("맑은 고딕", 9F);
         txtDataRootParent.ReadOnly        = true;
         txtDataRootParent.BackColor       = SystemColors.Window;
 
-        btnBrowseDataRoot.Location  = new Point(232, 403);
+        btnBrowseDataRoot.Location  = new Point(232, 425);
         btnBrowseDataRoot.Size      = new Size(28, 26);
         btnBrowseDataRoot.Font      = new Font("맑은 고딕", 9F);
         btnBrowseDataRoot.Text      = "...";
         btnBrowseDataRoot.Click    += new EventHandler(BtnBrowseDataRoot_Click);
 
-        btnResetDataRoot.Location  = new Point(264, 403);
+        btnResetDataRoot.Location  = new Point(264, 425);
         btnResetDataRoot.Size      = new Size(26, 26);
         btnResetDataRoot.Font      = new Font("맑은 고딕", 9F);
         btnResetDataRoot.Text      = "↺";
         btnResetDataRoot.ForeColor = Color.DimGray;
         btnResetDataRoot.Click    += new EventHandler(BtnResetDataRoot_Click);
 
-        lblDataRootPreview.Location  = new Point(8, 434);
+        lblDataRootPreview.Location  = new Point(8, 456);
         lblDataRootPreview.Size      = new Size(280, 32);
         lblDataRootPreview.Font      = new Font("맑은 고딕", 7.5F);
         lblDataRootPreview.ForeColor = Color.SteelBlue;
@@ -327,6 +356,7 @@ partial class MonitorOptionsForm
         tabGeneral.Controls.Add(lblSectionNotify);
         tabGeneral.Controls.Add(chkBalloonTips);
         tabGeneral.Controls.Add(chkStartStop);
+        tabGeneral.Controls.Add(chkMicMonitor);
         tabGeneral.Controls.Add(lblSectionLog);
         tabGeneral.Controls.Add(chkLogEnabled);
         tabGeneral.Controls.Add(lblLogPath);
@@ -410,6 +440,13 @@ partial class MonitorOptionsForm
         btnOpenRecordFolder.Text      = "폴더 열기";
         btnOpenRecordFolder.Click    += new EventHandler(BtnOpenRecordFolder_Click);
 
+        btnViewRecordList.Location  = new Point(148, 156);
+        btnViewRecordList.Size      = new Size(140, 28);
+        btnViewRecordList.Font      = new Font("맑은 고딕", 9F);
+        btnViewRecordList.Text      = "녹화 파일 목록";
+        btnViewRecordList.ForeColor = Color.DarkRed;
+        btnViewRecordList.Click    += new EventHandler(BtnViewRecordList_Click);
+
         tabRecording.Text = "화면 녹화";
         tabRecording.Font = new Font("맑은 고딕", 9F);
         tabRecording.Controls.Add(lblSectionScreen);
@@ -423,6 +460,7 @@ partial class MonitorOptionsForm
         tabRecording.Controls.Add(lblSectionSave);
         tabRecording.Controls.Add(lblRecordPath);
         tabRecording.Controls.Add(btnOpenRecordFolder);
+        tabRecording.Controls.Add(btnViewRecordList);
 
         // ── 번역 탭 ──────────────────────────────────────────────────
 
@@ -547,6 +585,61 @@ partial class MonitorOptionsForm
         btnOpenSubtitleFolder.ForeColor = Color.DarkSlateBlue;
         btnOpenSubtitleFolder.Click    += new EventHandler(BtnOpenSubtitleFolder_Click);
 
+        lblSecOverlay.Text      = "── 오버레이 설정 ─────────────────";
+        lblSecOverlay.Location  = new Point(8, 402);
+        lblSecOverlay.Size      = new Size(280, 16);
+        lblSecOverlay.Font      = new Font("맑은 고딕", 8.5F, FontStyle.Bold);
+        lblSecOverlay.ForeColor = Color.DimGray;
+
+        lblOvFont.Text     = "글꼴 크기:";
+        lblOvFont.Font     = new Font("맑은 고딕", 9F);
+        lblOvFont.Location = new Point(8, 426);
+        lblOvFont.AutoSize = true;
+
+        nudOverlayFont.Location       = new Point(80, 423);
+        nudOverlayFont.Size           = new Size(64, 25);
+        nudOverlayFont.Font           = new Font("맑은 고딕", 9F);
+        nudOverlayFont.Minimum        = 8;
+        nudOverlayFont.Maximum        = 24;
+        nudOverlayFont.Value          = 11;
+        nudOverlayFont.DecimalPlaces  = 0;
+
+        lblOvFontUnit.Text      = "pt  (8 ~ 24)";
+        lblOvFontUnit.Font      = new Font("맑은 고딕", 8.5F);
+        lblOvFontUnit.Location  = new Point(148, 426);
+        lblOvFontUnit.AutoSize  = true;
+        lblOvFontUnit.ForeColor = Color.DimGray;
+
+        lblOvAlpha.Text     = "불투명도:";
+        lblOvAlpha.Font     = new Font("맑은 고딕", 9F);
+        lblOvAlpha.Location = new Point(8, 456);
+        lblOvAlpha.AutoSize = true;
+
+        nudOverlayOpacity.Location      = new Point(80, 453);
+        nudOverlayOpacity.Size          = new Size(64, 25);
+        nudOverlayOpacity.Font          = new Font("맑은 고딕", 9F);
+        nudOverlayOpacity.Minimum       = 20;
+        nudOverlayOpacity.Maximum       = 100;
+        nudOverlayOpacity.Value         = 85;
+        nudOverlayOpacity.DecimalPlaces = 0;
+
+        lblOvAlphaUnit.Text      = "%  (20 ~ 100)";
+        lblOvAlphaUnit.Font      = new Font("맑은 고딕", 8.5F);
+        lblOvAlphaUnit.Location  = new Point(148, 456);
+        lblOvAlphaUnit.AutoSize  = true;
+        lblOvAlphaUnit.ForeColor = Color.DimGray;
+
+        lblOvBg.Text     = "배경색:";
+        lblOvBg.Font     = new Font("맑은 고딕", 9F);
+        lblOvBg.Location = new Point(8, 486);
+        lblOvBg.AutoSize = true;
+
+        btnOverlayBgColor.Location  = new Point(65, 483);
+        btnOverlayBgColor.Size      = new Size(80, 26);
+        btnOverlayBgColor.Font      = new Font("맑은 고딕", 9F);
+        btnOverlayBgColor.Text      = "색상 선택";
+        btnOverlayBgColor.Click    += new EventHandler(BtnOverlayBgColor_Click);
+
         tabTranslation.Text       = "번역";
         tabTranslation.Font       = new Font("맑은 고딕", 9F);
         tabTranslation.AutoScroll = true;
@@ -570,6 +663,15 @@ partial class MonitorOptionsForm
         tabTranslation.Controls.Add(btnCheckUsage);
         tabTranslation.Controls.Add(chkLogTrans);
         tabTranslation.Controls.Add(btnOpenSubtitleFolder);
+        tabTranslation.Controls.Add(lblSecOverlay);
+        tabTranslation.Controls.Add(lblOvFont);
+        tabTranslation.Controls.Add(nudOverlayFont);
+        tabTranslation.Controls.Add(lblOvFontUnit);
+        tabTranslation.Controls.Add(lblOvAlpha);
+        tabTranslation.Controls.Add(nudOverlayOpacity);
+        tabTranslation.Controls.Add(lblOvAlphaUnit);
+        tabTranslation.Controls.Add(lblOvBg);
+        tabTranslation.Controls.Add(btnOverlayBgColor);
 
         // ── TabControl ────────────────────────────────────────────────
 

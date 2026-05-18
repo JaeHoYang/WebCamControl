@@ -272,7 +272,7 @@ internal partial class HelpForm : Form
         AppendHeader("만든 사람");
         AppendBody(
             "제작자: jaeho\n" +
-            "버전:   v1.06.21\n" +
+            "버전:   v1.07.00\n" +
             "메일:   jaeho9697@gmail.com");
 
         rtb.SelectionStart = 0;

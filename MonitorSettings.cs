@@ -49,6 +49,14 @@ internal sealed class MonitorSettings
     internal int    OverlayWidth            { get; set; } = 600;
     internal int    OverlayHeight           { get; set; } = 200;
 
+    // 마이크 감지
+    internal bool  MicMonitorEnabled   { get; set; } = false;
+
+    // 오버레이 커스터마이징
+    internal float  OverlayFontSize     { get; set; } = 11F;
+    internal double OverlayOpacity      { get; set; } = 0.85;
+    internal int    OverlayBgColorArgb  { get; set; } = -15461356; // Color.FromArgb(20,20,20)
+
     // 저장 공간 경고
     internal bool StorageWarningEnabled { get; set; } = true;
     internal int  LogSizeWarningMB      { get; set; } = 100;
@@ -104,6 +112,12 @@ internal sealed class MonitorSettings
         public int    OvY            { get; set; } = 800;
         public int    OvW            { get; set; } = 600;
         public int    OvH            { get; set; } = 200;
+        // 마이크 감지
+        public bool   MicOn      { get; set; }
+        // 오버레이
+        public float  OvFont     { get; set; } = 11F;
+        public double OvAlpha    { get; set; } = 0.85;
+        public int    OvBg       { get; set; } = -15461356;
         // 저장 공간 경고
         public bool   StoreWarn  { get; set; } = true;
         public int    LogWarnMB  { get; set; } = 100;
@@ -158,6 +172,10 @@ internal sealed class MonitorSettings
                     s.OverlayY                = dto.OvY;
                     s.OverlayWidth            = dto.OvW;
                     s.OverlayHeight           = dto.OvH;
+                    s.MicMonitorEnabled       = dto.MicOn;
+                    s.OverlayFontSize         = Math.Clamp(dto.OvFont, 8F, 24F);
+                    s.OverlayOpacity          = Math.Clamp(dto.OvAlpha, 0.2, 1.0);
+                    s.OverlayBgColorArgb      = dto.OvBg;
                     s.StorageWarningEnabled   = dto.StoreWarn;
                     s.LogSizeWarningMB        = Math.Max(1, dto.LogWarnMB);
                     s.RecordSizeWarningMB     = Math.Max(1, dto.RecWarnMB);
@@ -224,6 +242,10 @@ internal sealed class MonitorSettings
             OvY       = OverlayY,
             OvW       = OverlayWidth,
             OvH       = OverlayHeight,
+            MicOn    = MicMonitorEnabled,
+            OvFont   = OverlayFontSize,
+            OvAlpha  = OverlayOpacity,
+            OvBg     = OverlayBgColorArgb,
             StoreWarn = StorageWarningEnabled,
             LogWarnMB = LogSizeWarningMB,
             RecWarnMB = RecordSizeWarningMB,

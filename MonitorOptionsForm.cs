@@ -14,16 +14,19 @@ internal partial class MonitorOptionsForm : Form
     private static readonly string[] TargetLangCodes   = { "KO", "EN-US", "JA", "ZH" };
     private static readonly string[] TargetLangDisplay = { "한국어", "영어 (미국)", "일본어", "중국어 (간체)" };
 
+    private Color _overlayBgColor;
+
     internal MonitorOptionsForm(MonitorSettings settings)
     {
         InitializeComponent();
         _settings = settings;
 
         // 일반 탭
-        nudInterval.Value      = Math.Clamp(settings.MonitorIntervalSeconds, 1, 10);
-        chkBalloonTips.Checked = settings.ShowBalloonTips;
-        chkStartStop.Checked   = settings.NotifyOnStartStop;
-        chkLogEnabled.Checked  = settings.LogEnabled;
+        nudInterval.Value        = Math.Clamp(settings.MonitorIntervalSeconds, 1, 10);
+        chkBalloonTips.Checked   = settings.ShowBalloonTips;
+        chkStartStop.Checked     = settings.NotifyOnStartStop;
+        chkMicMonitor.Checked    = settings.MicMonitorEnabled;
+        chkLogEnabled.Checked    = settings.LogEnabled;
         lblLogPath.Text        = EventLogger.LogDirectory;
         UpdateLogButtons();
 
@@ -64,6 +67,12 @@ internal partial class MonitorOptionsForm : Form
         cmbTgtLang.Items.AddRange(TargetLangDisplay);
         int tgtIdx = Array.IndexOf(TargetLangCodes, settings.TranslationTargetLang);
         cmbTgtLang.SelectedIndex = tgtIdx >= 0 ? tgtIdx : 0;
+
+        // 오버레이 커스터마이징
+        nudOverlayFont.Value    = (decimal)Math.Clamp(settings.OverlayFontSize, 8F, 24F);
+        nudOverlayOpacity.Value = (decimal)Math.Round(settings.OverlayOpacity * 100);
+        _overlayBgColor         = Color.FromArgb(settings.OverlayBgColorArgb);
+        UpdateOverlayBgButton();
 
         UpdateTranslationControls();
     }
@@ -198,6 +207,12 @@ internal partial class MonitorOptionsForm : Form
     {
         Directory.CreateDirectory(ScreenRecorder.SaveDirectory);
         Process.Start("explorer.exe", ScreenRecorder.SaveDirectory);
+    }
+
+    private void BtnViewRecordList_Click(object? sender, EventArgs e)
+    {
+        using var dlg = new RecordingListForm();
+        dlg.ShowDialog(this);
     }
 
     // ── 번역 탭 ─────────────────────────────────────────────────────────
@@ -335,6 +350,22 @@ internal partial class MonitorOptionsForm : Form
         Process.Start("explorer.exe", EventLogger.SubtitleLogDirectory);
     }
 
+    private void UpdateOverlayBgButton()
+    {
+        btnOverlayBgColor.BackColor = _overlayBgColor;
+        btnOverlayBgColor.ForeColor = _overlayBgColor.GetBrightness() > 0.4f ? Color.Black : Color.White;
+    }
+
+    private void BtnOverlayBgColor_Click(object? sender, EventArgs e)
+    {
+        using var dlg = new ColorDialog { Color = _overlayBgColor, FullOpen = true };
+        if (dlg.ShowDialog(this) == DialogResult.OK)
+        {
+            _overlayBgColor = dlg.Color;
+            UpdateOverlayBgButton();
+        }
+    }
+
     // ── 확인 / 취소 ─────────────────────────────────────────────────────
 
     private void BtnOk_Click(object? sender, EventArgs e)
@@ -342,6 +373,7 @@ internal partial class MonitorOptionsForm : Form
         _settings.MonitorIntervalSeconds = (int)nudInterval.Value;
         _settings.ShowBalloonTips        = chkBalloonTips.Checked;
         _settings.NotifyOnStartStop      = chkStartStop.Checked;
+        _settings.MicMonitorEnabled      = chkMicMonitor.Checked;
         _settings.LogEnabled             = chkLogEnabled.Checked;
 
         _settings.RecordScreenEnabled = chkRecordScreen.Checked;
@@ -362,6 +394,9 @@ internal partial class MonitorOptionsForm : Form
         _settings.TranslationTargetLang   = TargetLangCodes[Math.Max(0, cmbTgtLang.SelectedIndex)];
         _settings.ShowOriginalText        = chkShowOrig.Checked;
         _settings.LogTranslation          = chkLogTrans.Checked;
+        _settings.OverlayFontSize         = (float)nudOverlayFont.Value;
+        _settings.OverlayOpacity          = (double)nudOverlayOpacity.Value / 100.0;
+        _settings.OverlayBgColorArgb      = _overlayBgColor.ToArgb();
 
         _settings.Save();
         DialogResult = DialogResult.OK;

@@ -203,7 +203,7 @@ partial class MainForm
         lblAuthor.TextAlign = ContentAlignment.MiddleLeft;
 
         // lblVersion
-        lblVersion.Text      = "v1.06.21";
+        lblVersion.Text      = "v1.07.00";
         lblVersion.Location  = new Point(120, 366);
         lblVersion.Size      = new Size(60, 18);
         lblVersion.Font      = new Font("맑은 고딕", 8F, FontStyle.Italic);

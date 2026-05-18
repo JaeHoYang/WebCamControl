@@ -13,10 +13,18 @@ internal partial class TranslationOverlayForm : Form
         set => _showOriginal = value;
     }
 
-    internal TranslationOverlayForm(bool showOriginal, Rectangle bounds)
+    internal TranslationOverlayForm(bool showOriginal, Rectangle bounds,
+        float fontSize = 11F, double opacity = 0.85, int bgColorArgb = -15461356)
     {
         InitializeComponent();
         _showOriginal = showOriginal;
+
+        rtbLog.Font = new Font(rtbLog.Font.FontFamily, fontSize, FontStyle.Bold);
+        Opacity      = opacity;
+        var bg = Color.FromArgb(bgColorArgb);
+        rtbLog.BackColor   = bg;
+        lblPartial.BackColor = bg;
+        BackColor          = bg;
 
         if (bounds != Rectangle.Empty)
         {
