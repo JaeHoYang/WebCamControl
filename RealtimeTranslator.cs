@@ -18,6 +18,9 @@ internal sealed class RealtimeTranslator : IDisposable
     private bool _running;
     private bool _quotaExceeded;
 
+    // partial 단어 수가 이 임계값을 넘으면 무음을 기다리지 않고 강제 커밋
+    private const int AutoCommitWordThreshold = 15;
+
     internal bool   IsRunning          => _running;
     internal string VoskModelPath      { get; set; } = string.Empty;
     internal string DeepLApiKey        { get; set; } = string.Empty;
@@ -93,7 +96,19 @@ internal sealed class RealtimeTranslator : IDisposable
         {
             var partial = ParsePartialText(_recognizer.PartialResult());
             if (!string.IsNullOrWhiteSpace(partial))
-                PartialReceived?.Invoke(partial);
+            {
+                int wordCount = partial.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+                if (wordCount >= AutoCommitWordThreshold)
+                {
+                    // 무음 없이 말이 길어지면 현재 partial을 확정하고 인식기 리셋
+                    _recognizer.Reset();
+                    ProcessText(partial);
+                }
+                else
+                {
+                    PartialReceived?.Invoke(partial);
+                }
+            }
         }
     }
 

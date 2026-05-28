@@ -7,6 +7,9 @@ internal partial class TranslationOverlayForm : Form
     private bool _showOriginal;
     private const int MaxLines = 300;
 
+    // partial 텍스트가 rtbLog 어느 위치부터 시작하는지 추적 (-1 = partial 없음)
+    private int _partialStart = -1;
+
     internal bool ShowOriginal
     {
         get => _showOriginal;
@@ -40,13 +43,22 @@ internal partial class TranslationOverlayForm : Form
     internal void ShowPartial(string text)
     {
         if (!SafeInvoke(() => ShowPartial(text))) return;
-        lblPartial.Text = text;
+
+        if (_partialStart < 0)
+            _partialStart = rtbLog.TextLength;
+
+        // partial 범위를 새 텍스트로 덮어씀 (회색 = 미확정)
+        rtbLog.Select(_partialStart, rtbLog.TextLength - _partialStart);
+        rtbLog.SelectionColor = Color.FromArgb(130, 130, 130);
+        rtbLog.SelectedText   = text;
+        rtbLog.SelectionStart = rtbLog.TextLength;
+        rtbLog.ScrollToCaret();
     }
 
     internal void ShowText(string original, string translated)
     {
         if (!SafeInvoke(() => ShowText(original, translated))) return;
-        lblPartial.Text = string.Empty;
+        ClearPartial();
         if (_showOriginal)
             AppendLine($"원문: {original}", Color.FromArgb(180, 180, 180));
         AppendLine($"번역: {translated}", Color.Yellow);
@@ -56,7 +68,7 @@ internal partial class TranslationOverlayForm : Form
     internal void ShowSubtitle(string text)
     {
         if (!SafeInvoke(() => ShowSubtitle(text))) return;
-        lblPartial.Text = string.Empty;
+        ClearPartial();
         AppendLine(text, Color.White);
         TrimOldLines();
     }
@@ -64,8 +76,22 @@ internal partial class TranslationOverlayForm : Form
     internal void ShowWarning(string message)
     {
         if (!SafeInvoke(() => ShowWarning(message))) return;
-        lblPartial.Text = string.Empty;
+        ClearPartial();
         AppendLine(message, Color.Orange);
+    }
+
+    // partial 범위를 rtbLog에서 제거하고 상태를 초기화
+    private void ClearPartial()
+    {
+        if (_partialStart < 0) return;
+        int len = rtbLog.TextLength - _partialStart;
+        if (len > 0)
+        {
+            rtbLog.Select(_partialStart, len);
+            rtbLog.SelectedText = string.Empty;
+        }
+        _partialStart   = -1;
+        lblPartial.Text = string.Empty;
     }
 
     // 크로스-스레드 호출을 안전하게 처리.
