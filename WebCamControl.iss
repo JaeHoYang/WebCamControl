@@ -34,7 +34,8 @@ Name: "startup";     Description: "Windows 시작 시 자동으로 실행 (시�
 Name: "desktopicon"; Description: "바탕화면에 바로가기 만들기";                         GroupDescription: "추가 옵션:"
 
 [Files]
-Source: "{#MyAppExeSrc}"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#MyAppExeSrc}";                                           DestDir: "{app}"; Flags: ignoreversion
+Source: "bin\Release\net8.0-windows\win-x64\publish\libvosk.dll";  DestDir: "{app}"; Flags: ignoreversion
 
 [Icons]
 Name: "{group}\{#MyAppName}";                        Filename: "{app}\{#MyAppExeName}"
