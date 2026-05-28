@@ -15,8 +15,9 @@ internal sealed class RealtimeTranslator : IDisposable
     private WasapiLoopbackCapture? _capture;
     private VoskRecognizer? _recognizer;
     private Model? _model;
-    private bool _running;
-    private bool _quotaExceeded;
+    private bool   _running;
+    private bool   _quotaExceeded;
+    private string _autoCommittedPartial = string.Empty; // Reset 후 재출력되는 prefix 필터용
 
     // partial 단어 수가 이 임계값을 넘으면 무음을 기다리지 않고 강제 커밋
     private const int AutoCommitWordThreshold = 15;
@@ -88,6 +89,7 @@ internal sealed class RealtimeTranslator : IDisposable
 
         if (_recognizer.AcceptWaveform(pcm, pcm.Length))
         {
+            _autoCommittedPartial = string.Empty; // 진짜 final — 필터 초기화
             var text = ParseText(_recognizer.Result());
             if (!string.IsNullOrWhiteSpace(text))
                 ProcessText(text);
@@ -97,16 +99,19 @@ internal sealed class RealtimeTranslator : IDisposable
             var partial = ParsePartialText(_recognizer.PartialResult());
             if (!string.IsNullOrWhiteSpace(partial))
             {
-                int wordCount = partial.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
+                // Reset 후 Vosk가 재출력한 이전 커밋 prefix 제거
+                string display = StripCommittedPrefix(partial);
+
+                int wordCount = display.Split(' ', StringSplitOptions.RemoveEmptyEntries).Length;
                 if (wordCount >= AutoCommitWordThreshold)
                 {
-                    // 무음 없이 말이 길어지면 현재 partial을 확정하고 인식기 리셋
+                    _autoCommittedPartial = partial; // 전체 partial 저장 (다음 prefix 필터용)
                     _recognizer.Reset();
-                    ProcessText(partial);
+                    ProcessText(display);
                 }
-                else
+                else if (!string.IsNullOrWhiteSpace(display))
                 {
-                    PartialReceived?.Invoke(partial);
+                    PartialReceived?.Invoke(display);
                 }
             }
         }
@@ -142,6 +147,16 @@ internal sealed class RealtimeTranslator : IDisposable
                 TextReceived?.Invoke(original, original);
             }
         });
+    }
+
+    private string StripCommittedPrefix(string partial)
+    {
+        if (string.IsNullOrEmpty(_autoCommittedPartial)) return partial;
+        if (partial.StartsWith(_autoCommittedPartial, StringComparison.Ordinal))
+            return partial[_autoCommittedPartial.Length..].TrimStart();
+        // Vosk가 Reset 후 새로 시작했거나 텍스트가 달라진 경우 → 필터 해제
+        _autoCommittedPartial = string.Empty;
+        return partial;
     }
 
     private static byte[] ConvertToPcm16k(byte[] input, int count, WaveFormat inputFormat)

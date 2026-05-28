@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+
 namespace WebCamControl;
 
 internal partial class TranslationOverlayForm : Form
@@ -9,6 +11,9 @@ internal partial class TranslationOverlayForm : Form
 
     // partial 텍스트가 rtbLog 어느 위치부터 시작하는지 추적 (-1 = partial 없음)
     private int _partialStart = -1;
+
+    [DllImport("user32.dll")] static extern IntPtr SendMessage(IntPtr h, int msg, IntPtr w, IntPtr l);
+    private const int WM_SETREDRAW = 0x000B;
 
     internal bool ShowOriginal
     {
@@ -47,11 +52,14 @@ internal partial class TranslationOverlayForm : Form
         if (_partialStart < 0)
             _partialStart = rtbLog.TextLength;
 
-        // partial 범위를 새 텍스트로 덮어씀 (회색 = 미확정)
+        // 리드로우를 잠근 채로 텍스트 교체 → 깜빡임·스크롤 점프 방지
+        SendMessage(rtbLog.Handle, WM_SETREDRAW, IntPtr.Zero, IntPtr.Zero);
         rtbLog.Select(_partialStart, rtbLog.TextLength - _partialStart);
         rtbLog.SelectionColor = Color.FromArgb(130, 130, 130);
         rtbLog.SelectedText   = text;
         rtbLog.SelectionStart = rtbLog.TextLength;
+        SendMessage(rtbLog.Handle, WM_SETREDRAW, new IntPtr(1), IntPtr.Zero);
+        rtbLog.Invalidate();
         rtbLog.ScrollToCaret();
     }
 
@@ -102,7 +110,7 @@ internal partial class TranslationOverlayForm : Form
     {
         if (!InvokeRequired) return false;
         if (IsDisposed || !IsHandleCreated) return true;
-        try { Invoke(action); }
+        try { BeginInvoke(action); } // 비동기 — 오디오 스레드가 UI 스레드를 블로킹하지 않음
         catch (ObjectDisposedException) { }
         catch (InvalidOperationException) { }
         return true;
