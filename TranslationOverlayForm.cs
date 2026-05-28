@@ -9,9 +9,6 @@ internal partial class TranslationOverlayForm : Form
     private bool _showOriginal;
     private const int MaxLines = 300;
 
-    // partial 텍스트가 rtbLog 어느 위치부터 시작하는지 추적 (-1 = partial 없음)
-    private int _partialStart = -1;
-
     [DllImport("user32.dll")] static extern IntPtr SendMessage(IntPtr h, int msg, IntPtr w, IntPtr l);
     private const int WM_SETREDRAW = 0x000B;
 
@@ -48,19 +45,7 @@ internal partial class TranslationOverlayForm : Form
     internal void ShowPartial(string text)
     {
         if (!SafeInvoke(() => ShowPartial(text))) return;
-
-        if (_partialStart < 0)
-            _partialStart = rtbLog.TextLength;
-
-        // 리드로우를 잠근 채로 텍스트 교체 → 깜빡임·스크롤 점프 방지
-        SendMessage(rtbLog.Handle, WM_SETREDRAW, IntPtr.Zero, IntPtr.Zero);
-        rtbLog.Select(_partialStart, rtbLog.TextLength - _partialStart);
-        rtbLog.SelectionColor = Color.FromArgb(130, 130, 130);
-        rtbLog.SelectedText   = text;
-        rtbLog.SelectionStart = rtbLog.TextLength;
-        SendMessage(rtbLog.Handle, WM_SETREDRAW, new IntPtr(1), IntPtr.Zero);
-        rtbLog.Invalidate();
-        rtbLog.ScrollToCaret();
+        lblPartial.Text = text;
     }
 
     internal void ShowText(string original, string translated)
@@ -88,17 +73,8 @@ internal partial class TranslationOverlayForm : Form
         AppendLine(message, Color.Orange);
     }
 
-    // partial 범위를 rtbLog에서 제거하고 상태를 초기화
     private void ClearPartial()
     {
-        if (_partialStart < 0) return;
-        int len = rtbLog.TextLength - _partialStart;
-        if (len > 0)
-        {
-            rtbLog.Select(_partialStart, len);
-            rtbLog.SelectedText = string.Empty;
-        }
-        _partialStart   = -1;
         lblPartial.Text = string.Empty;
     }
 
@@ -130,8 +106,13 @@ internal partial class TranslationOverlayForm : Form
     {
         if (rtbLog.Lines.Length <= MaxLines) return;
         int removeUntil = rtbLog.GetFirstCharIndexFromLine(rtbLog.Lines.Length - MaxLines);
+        SendMessage(rtbLog.Handle, WM_SETREDRAW, IntPtr.Zero, IntPtr.Zero);
         rtbLog.Select(0, removeUntil);
         rtbLog.SelectedText = string.Empty;
+        rtbLog.SelectionStart = rtbLog.TextLength;
+        SendMessage(rtbLog.Handle, WM_SETREDRAW, new IntPtr(1), IntPtr.Zero);
+        rtbLog.Invalidate();
+        rtbLog.ScrollToCaret();
     }
 
     protected override void OnFormClosing(FormClosingEventArgs e)
